@@ -1,0 +1,281 @@
+{
+  "generated_at": 1792080049.9295263,
+  "nodes": [
+    "STARLINK-3104:9001",
+    "ONEWEB-0412:9002"
+  ],
+  "total_frames_exchanged": 27,
+  "protocol_status": "CONVERGED_SAFE",
+  "logs": [
+    {
+      "timestamp": "21:30:49.518",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "LISTENING",
+      "message": "Listening on UDP port 9002 for incoming ISL traffic...",
+      "hex_preview": "",
+      "bytes": 0
+    },
+    {
+      "timestamp": "21:30:49.828",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "STATE_INIT",
+      "message": "Starting S2SCAN Bilateral Inter-Satellite Link...",
+      "hex_preview": "",
+      "bytes": 0
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "TX_CONJUNCTION_ALERT",
+      "message": "Sent 273 bytes to :9002",
+      "hex_preview": "533201010000000141dab43e2c7b7d5c...",
+      "bytes": 273
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "RX_CONJUNCTION_ALERT",
+      "message": "Received 236 bytes from 9002 (Seq #1)",
+      "hex_preview": "533201010000000141dab43e2c7b7d5c...",
+      "bytes": 236
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "TX_AUTH_REQUEST",
+      "message": "Sent 293 bytes to :9002",
+      "hex_preview": "533201020000000241dab43e2c7b7d5c...",
+      "bytes": 293
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "RX_AUTH_RESPONSE",
+      "message": "Received 329 bytes from 9002 (Seq #2)",
+      "hex_preview": "533201030000000241dab43e2c7b7d5c...",
+      "bytes": 329
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "TX_STATE_EXCHANGE",
+      "message": "Sent 354 bytes to :9002",
+      "hex_preview": "533201040000000341dab43e2c7b7d5c...",
+      "bytes": 354
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "RX_STATE_EXCHANGE",
+      "message": "Received 351 bytes from 9002 (Seq #3)",
+      "hex_preview": "533201040000000341dab43e2c7b7d5c...",
+      "bytes": 351
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "TX_MANEUVER_PROPOSAL",
+      "message": "Sent 267 bytes to :9002",
+      "hex_preview": "533201050000000441dab43e2c7b7d5c...",
+      "bytes": 267
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "RX_PROPOSAL_ACCEPT",
+      "message": "Received 257 bytes from 9002 (Seq #4)",
+      "hex_preview": "533201060000000441dab43e2c7b7d5c...",
+      "bytes": 257
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "TX_COMMIT_SALT_REVEAL",
+      "message": "Sent 268 bytes to :9002",
+      "hex_preview": "533201070000000541dab43e2c7b7d5c...",
+      "bytes": 268
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "RX_CONSENSUS_LOCK",
+      "message": "Received 245 bytes from 9002 (Seq #5)",
+      "hex_preview": "533201080000000541dab43e2c7b7d5c...",
+      "bytes": 245
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "TX_CONSENSUS_LOCK",
+      "message": "Sent 282 bytes to :9002",
+      "hex_preview": "533201080000000641dab43e2c7b7d5c...",
+      "bytes": 282
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_A",
+      "satellite": "STARLINK-3104",
+      "port": 9001,
+      "event": "BURN_EXECUTION",
+      "message": "Two-Phase Commit locked. Firing 0.45 m/s in-track thruster burn!",
+      "hex_preview": "",
+      "bytes": 0
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "RX_CONJUNCTION_ALERT",
+      "message": "Received 273 bytes from 9001 (Seq #1)",
+      "hex_preview": "533201010000000141dab43e2c7b7d5c...",
+      "bytes": 273
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "TX_CONJUNCTION_ALERT",
+      "message": "Sent 236 bytes to :9001",
+      "hex_preview": "533201010000000141dab43e2c7b7d5c...",
+      "bytes": 236
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "RX_AUTH_REQUEST",
+      "message": "Received 293 bytes from 9001 (Seq #2)",
+      "hex_preview": "533201020000000241dab43e2c7b7d5c...",
+      "bytes": 293
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "TX_AUTH_RESPONSE",
+      "message": "Sent 329 bytes to :9001",
+      "hex_preview": "533201030000000241dab43e2c7b7d5c...",
+      "bytes": 329
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "RX_STATE_EXCHANGE",
+      "message": "Received 354 bytes from 9001 (Seq #3)",
+      "hex_preview": "533201040000000341dab43e2c7b7d5c...",
+      "bytes": 354
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "TX_STATE_EXCHANGE",
+      "message": "Sent 351 bytes to :9001",
+      "hex_preview": "533201040000000341dab43e2c7b7d5c...",
+      "bytes": 351
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "RX_MANEUVER_PROPOSAL",
+      "message": "Received 267 bytes from 9001 (Seq #4)",
+      "hex_preview": "533201050000000441dab43e2c7b7d5c...",
+      "bytes": 267
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "TX_PROPOSAL_ACCEPT",
+      "message": "Sent 257 bytes to :9001",
+      "hex_preview": "533201060000000441dab43e2c7b7d5c...",
+      "bytes": 257
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "RX_COMMIT_SALT_REVEAL",
+      "message": "Received 268 bytes from 9001 (Seq #5)",
+      "hex_preview": "533201070000000541dab43e2c7b7d5c...",
+      "bytes": 268
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "TX_CONSENSUS_LOCK",
+      "message": "Sent 245 bytes to :9001",
+      "hex_preview": "533201080000000541dab43e2c7b7d5c...",
+      "bytes": 245
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "RX_CONSENSUS_LOCK",
+      "message": "Received 282 bytes from 9001 (Seq #6)",
+      "hex_preview": "533201080000000641dab43e2c7b7d5c...",
+      "bytes": 282
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "TX_THRUSTER_CONFIRM",
+      "message": "Sent 243 bytes to :9001",
+      "hex_preview": "533201090000000641dab43e2c7b7d5c...",
+      "bytes": 243
+    },
+    {
+      "timestamp": "21:30:49.929",
+      "node": "NODE_B",
+      "satellite": "ONEWEB-0412",
+      "port": 9002,
+      "event": "CONSENSUS_AGREED",
+      "message": "Bilateral consensus locked. Course held safely while peer maneuvers.",
+      "hex_preview": "",
+      "bytes": 0
+    }
+  ]
+}

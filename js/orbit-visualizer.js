@@ -375,6 +375,36 @@ export class OrbitVisualizer {
       : (isColliding ? 'COLLISION COURSE' : 'TRACKING');
     this.drawSatelliteNode(ctx, satBx, satBy, '#ff9500', satBName, '551 km | 7.58 km/s', satBStatus);
 
+    // If 3-Way Cluster: Draw Satellite C (Defunct Debris)
+    if (this.scenario?.is3Way && this.scenario?.satC) {
+      const satCx = tcaPointX + 105 * (1 - this.simTime * 0.25);
+      const satCy = tcaPointY - 95 * (1 - this.simTime * 0.3);
+
+      // Exclusion Zone Circle around Debris
+      ctx.strokeStyle = 'rgba(255, 69, 58, 0.5)';
+      ctx.fillStyle = 'rgba(255, 69, 58, 0.08)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.arc(satCx, satCy, 38, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fill();
+      ctx.setLineDash([]);
+
+      // Secondary Hazard Vector from Sat A to Sat C
+      ctx.strokeStyle = 'rgba(255, 204, 0, 0.6)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([2, 4]);
+      ctx.beginPath();
+      ctx.moveTo(satAx, satAy);
+      ctx.lineTo(satCx, satCy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const satCName = this.scenario.satC.satelliteId;
+      this.drawSatelliteNode(ctx, satCx, satCy, '#ff453a', satCName, '552 km | 7.60 km/s', 'DEFUNCT (NO THRUST)');
+    }
+
     ctx.restore(); // Restore zoom/pan
 
     // HUD Stats Overlay in top-left corner

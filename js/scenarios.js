@@ -297,5 +297,66 @@ export const SIMULATION_SCENARIOS = [
       recoveryCost: 1.0,
       liesAboutFuel: false
     }
+  },
+  {
+    id: 'scen_3way_cluster',
+    title: '8. 3-Way Conjunction Cluster (Cascade Avoidance)',
+    badge: '3-Way Multi-Agent',
+    description: 'Starlink-3104 vs OneWeb-0412 with Cosmos-2251 Debris occupying the in-track corridor. Naive burn causes secondary impact; S2SCAN solves joint spatial exclusion constraint.',
+    tcaSeconds: 90,
+    missDistanceMeters: 138,
+    pcValue: '2.15e-3',
+    packetLossProb: 0.0,
+    is3Way: true,
+    satA: {
+      satelliteId: 'STARLINK-3104',
+      operatorId: 'SpaceX',
+      satClass: 'LEO_COMM',
+      fuelRemainingPct: 82,
+      fuelCategory: 'HIGH',
+      deltaVRequired: 0.45,
+      hasPropulsion: true,
+      isGEO: false,
+      isFormation: false,
+      isCrewed: false,
+      isDefunct: false,
+      missionPriority: 5,
+      recoveryCost: 0.35,
+      liesAboutFuel: false
+    },
+    satB: {
+      satelliteId: 'ONEWEB-0412',
+      operatorId: 'Eutelsat OneWeb',
+      satClass: 'LEO_COMM',
+      fuelRemainingPct: 40,
+      fuelCategory: 'MED',
+      deltaVRequired: 0.48,
+      hasPropulsion: true,
+      isGEO: false,
+      isFormation: false,
+      isCrewed: false,
+      isDefunct: false,
+      missionPriority: 5,
+      recoveryCost: 0.40,
+      liesAboutFuel: false
+    },
+    satC: {
+      satelliteId: 'COSMOS-2251-DEBRIS',
+      operatorId: 'Defunct Debris',
+      satClass: 'DEFUNCT_DEBRIS',
+      fuelRemainingPct: 0,
+      fuelCategory: 'CRITICAL',
+      deltaVRequired: 0.0,
+      hasPropulsion: false,
+      isGEO: false,
+      isFormation: false,
+      isCrewed: false,
+      isDefunct: true,
+      missionPriority: 0,
+      recoveryCost: 0.0,
+      liesAboutFuel: false,
+      offsetDistanceMeters: 850
+    }
   }
 ];
+

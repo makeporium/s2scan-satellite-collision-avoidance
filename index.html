@@ -6,13 +6,14 @@
   <title>S2SCAN: Autonomous Satellite Collision Avoidance Protocol & Simulator</title>
   <meta name="description" content="Aerospace-grade decentralized peer-to-peer collision avoidance protocol for cross-operator satellites using zero-knowledge privacy, game-theoretic bargaining, and BFT fallbacks.">
   
-  <!-- Modern Aerospace Typography from Google Fonts -->
+  <!-- Bespoke Aerospace Mission Typography from Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/presentation.css">
 </head>
 <body class="dark-theme">
 
@@ -52,6 +53,9 @@
     </div>
 
     <div class="header-right">
+      <button class="btn-presentation-mode" id="btnLaunchPresentation" title="Launch Interactive Viva Defense Slide Deck">
+        VIVA DEFENSE DECK
+      </button>
       <div class="status-indicator">
         <span class="pulse-dot"></span>
         <span id="systemStatusText">SIMULATOR READY</span>
@@ -63,31 +67,34 @@
   <!-- Navigation Tab Bar -->
   <nav class="nav-bar">
     <button class="nav-tab active" data-tab="tab_simulator">
-      <span class="tab-icon">🖥️</span> Simulator Console
+      <span class="tab-idx">01</span> CONSOLE
+    </button>
+    <button class="nav-tab" data-tab="tab_prj">
+      <span class="tab-idx">02</span> PRJ EVALUATION (25M)
     </button>
     <button class="nav-tab" data-tab="tab_variables">
-      <span class="tab-icon">📋</span> 105+ Variables Database
+      <span class="tab-idx">03</span> VARIABLES [105+]
     </button>
     <button class="nav-tab" data-tab="tab_game_theory">
-      <span class="tab-icon">⚖️</span> Game Theory Studio
+      <span class="tab-idx">04</span> GAME THEORY
     </button>
     <button class="nav-tab" data-tab="tab_crypto">
-      <span class="tab-icon">🔐</span> Cryptographic Inspector
+      <span class="tab-idx">05</span> CRYPTO
     </button>
     <button class="nav-tab" data-tab="tab_datasets">
-      <span class="tab-icon">📊</span> Real-World Datasets
+      <span class="tab-idx">06</span> DATASETS
     </button>
     <button class="nav-tab" data-tab="tab_backend_matrix">
-      <span class="tab-icon">⚙️</span> Frontend vs Backend Roadmap
+      <span class="tab-idx">07</span> ARCHITECTURE
     </button>
     <button class="nav-tab" data-tab="tab_benchmarks">
-      <span class="tab-icon">📈</span> Phase 4: 1,000 Monte Carlo Benchmarks
+      <span class="tab-idx">08</span> BENCHMARKS
     </button>
     <button class="nav-tab" data-tab="tab_paper">
-      <span class="tab-icon">📄</span> Research Paper Manuscript
+      <span class="tab-idx">09</span> RESEARCH PAPER
     </button>
     <button class="nav-tab" data-tab="tab_docs">
-      <span class="tab-icon">📚</span> Beginner's Guide & Docs
+      <span class="tab-idx">10</span> MASTER DOCS
     </button>
   </nav>
 
@@ -117,22 +124,22 @@
 
         <div class="control-group-center">
           <button id="btnStep" class="btn btn-primary" title="Execute next protocol step">
-            <span class="btn-icon">▶</span> Step Protocol
+            STEP PROTOCOL
           </button>
           <button id="btnAutoPlay" class="btn btn-secondary" title="Auto-advance all stages">
-            <span class="btn-icon">⏩</span> Auto-Run
+            AUTO RUN
           </button>
           <button id="btnReset" class="btn btn-ghost" title="Reset current scenario">
-            <span class="btn-icon">🔄</span> Reset
+            RESET
           </button>
         </div>
 
         <div class="control-group-right">
           <button id="btnInjectLie" class="btn btn-danger-outline" title="Simulate satellite cheating on fuel">
-            <span class="btn-icon">⚠️</span> Inject Byzantine Lie
+            INJECT BYZANTINE FAULT
           </button>
           <button id="btnInjectDrop" class="btn btn-warning-outline" title="Simulate 30% ISL packet drop">
-            <span class="btn-icon">⚡</span> Inject Packet Loss
+            INJECT PACKET DROP
           </button>
           <span id="protocolStatusBadge" class="status-badge badge-ready">STATUS: READY</span>
         </div>
@@ -147,25 +154,30 @@
           <!-- Orbital Canvas Container -->
           <div class="card orbital-canvas-card">
             <div class="card-header">
-              <span class="card-title">Inter-Satellite Orbital Conjunction Geometry</span>
+              <span class="card-title">INTER-SATELLITE ORBITAL CONJUNCTION GEOMETRY</span>
               <div class="radar-quick-tools">
+                <div class="radar-globe-segmented">
+                  <button class="radar-globe-btn active" id="btnViewRadar2D">2D RADAR</button>
+                  <button class="radar-globe-btn" id="btnViewGlobe3D">3D GLOBE</button>
+                </div>
                 <button id="btnZoomOut" class="btn-tool-sm" title="Zoom Out">−</button>
                 <span id="zoomDisplay" class="zoom-label">1.0x</span>
                 <button id="btnZoomIn" class="btn-tool-sm" title="Zoom In">+</button>
-                <button id="btnZoomReset" class="btn-tool-sm" title="Reset View">⟲</button>
+                <button id="btnZoomReset" class="btn-tool-sm" title="Reset View">RESET</button>
                 <label class="toggle-sm"><input type="checkbox" id="chkCovariance" checked> Covariance</label>
                 <label class="toggle-sm"><input type="checkbox" id="chkVectors" checked> Vectors</label>
               </div>
             </div>
-            <div class="canvas-wrapper">
+            <div class="canvas-wrapper" style="position: relative;">
               <canvas id="orbitCanvas"></canvas>
+              <canvas id="globeCanvas" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></canvas>
             </div>
             
             <!-- Timeline Scrubbing Bar -->
             <div class="timeline-scrub-bar">
               <span class="t-scrub-label">Scrub Timeline:</span>
               <input type="range" id="sliderTimelineScrub" min="0.05" max="0.95" step="0.01" value="0.1" class="timeline-slider">
-              <button id="btnResumePlay" class="btn-tool-sm" title="Resume Real-Time Animation">▶ Play</button>
+              <button id="btnResumePlay" class="btn-tool-sm" title="Resume Real-Time Animation">PLAY</button>
             </div>
 
             <div class="canvas-footer-stats">
@@ -178,7 +190,10 @@
                 <span class="cs-val highlight-danger" id="hudMiss">142 m</span>
               </div>
               <div class="c-stat">
-                <span class="cs-label">Collision Risk (Pc):</span>
+                <span class="cs-label">Collision Risk (Pc): 
+                  <button class="btn-what" id="whatPc" title="What is Collision Probability?">[WHAT]</button>
+                  <button class="btn-why" id="whyPc" title="Verify Foster 1992 Formula">[WHY]</button>
+                </span>
                 <span class="cs-val highlight-danger" id="hudPc">1.84e-3</span>
               </div>
               <div class="c-stat">
@@ -192,8 +207,8 @@
           <div class="card cockpit-card">
             <div class="card-header">
               <div>
-                <span class="card-title">🎮 Interactive Flight Control & Decision Override Cockpit</span>
-                <span class="card-subtitle">Real-time parameters: change satellite fuel, classes, TCA countdown, and manually command maneuvers!</span>
+                <span class="card-title">FLIGHT DYNAMICS & DECISION OVERRIDE CONSOLE</span>
+                <span class="card-subtitle">Real-time parameters: satellite fuel budgets, craft classifications, TCA countdown, and manual vector overrides</span>
               </div>
               <span class="badge-accent" id="cockpitModeBadge">MANUAL INTERACTIVE MODE</span>
             </div>
@@ -253,10 +268,16 @@
                 <div class="tuning-col">
                   <label>TCA Urgency Countdown: <strong id="lblTcaSlider">94s</strong></label>
                   <input type="range" id="sliderTcaUrgency" min="10" max="300" value="94" class="cockpit-slider">
-                  <span class="tuning-sub">Formula 4 Rubinstein Discount D(t): <strong id="lblDiscountVal" style="color: #00e5ff">85.2%</strong></span>
+                  <span class="tuning-sub">Formula 4 Rubinstein Discount D(t): <strong id="lblDiscountVal" style="color: #00e5ff">85.2%</strong> 
+                    <button class="btn-what" id="whatRubinstein" title="What is Rubinstein Discount?">[WHAT]</button>
+                    <button class="btn-why" id="whyRubinstein" title="Verify Formula 4">[WHY]</button>
+                  </span>
                 </div>
                 <div class="tuning-col">
-                  <label>Maneuver Burn Vector:</label>
+                  <label>Maneuver Burn Vector: 
+                    <button class="btn-what" id="whatBurnVector" title="What are Burn Vectors?">[WHAT]</button>
+                    <button class="btn-why" id="whyBurnVector" title="Verify Gauss Mechanics">[WHY]</button>
+                  </label>
                   <div class="btn-group-segmented">
                     <button class="btn-seg active" data-dir="radial">Radial-Out (+R)</button>
                     <button class="btn-seg" data-dir="intrack">In-Track (+I)</button>
@@ -273,17 +294,24 @@
               <div class="manual-override-action-bar">
                 <span class="override-label">Command Actions:</span>
                 <button id="btnAutoSolve" class="btn btn-primary btn-sm">
-                  <span>🤖</span> Auto-Solve Nash Bargaining
+                  SOLVE NASH BARGAINING
                 </button>
+                <button class="btn-what" id="whatNash" title="What is Nash Bargaining?">[WHAT]</button>
+                <button class="btn-why" id="whyNash" title="Verify Nash Weights">[WHY]</button>
                 <button id="btnForceSatA" class="btn btn-cyan btn-sm">
-                  <span>⚡</span> Force Sat A Burn
+                  COMMAND SAT A BURN
                 </button>
                 <button id="btnForceSatB" class="btn btn-warning btn-sm">
-                  <span>⚡</span> Force Sat B Burn
+                  COMMAND SAT B BURN
                 </button>
                 <button id="btnTestCollision" class="btn btn-danger btn-sm">
-                  <span>💥</span> Test Collision (Hold Course)
+                  COLLISION TEST (HOLD COURSE)
                 </button>
+                <button id="btnLoad3WayCluster" class="btn btn-warning btn-sm" title="Simulate 3-satellite cluster encounter">
+                  3-WAY CLUSTER
+                </button>
+                <button class="btn-what" id="what3Way" title="What is 3-Way Cluster?">[WHAT]</button>
+                <button class="btn-why" id="why3Way" title="Verify Secondary Constraint">[WHY]</button>
               </div>
 
             </div>
@@ -357,6 +385,15 @@
 
       </div>
 
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB: PRJ ACADEMIC REVIEW & FORMAL RUBRIC -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab_prj">
+      <div id="prjViewer">
+        <!-- Dynamically rendered by app.js from prj-report.js -->
+      </div>
     </section>
 
     <!-- ========================================== -->
