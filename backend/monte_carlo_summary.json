@@ -1,0 +1,69 @@
+{
+  "total_trials": 1000,
+  "execution_wall_clock_seconds": 0.64,
+  "safety_rates": {
+    "s2scan_protocol_pct": 100.0,
+    "baseline_1_random_pct": 90.9,
+    "baseline_2_ground_pct": 53.900000000000006
+  },
+  "s2scan_latency_distribution_seconds": {
+    "mean": 0.431,
+    "median": 0.26,
+    "p95": 1.624,
+    "max": 1.799
+  },
+  "total_fuel_delta_v_spent_m_s": {
+    "s2scan": 509.16,
+    "baseline_1_random": 472.17,
+    "baseline_2_ground": 453.74,
+    "s2scan_fuel_savings_vs_random_pct": -7.8
+  },
+  "baseline_1_violations_breakdown": {
+    "DEPLETED_FUEL_SATELLITE_BURDENED": 81,
+    "GEO_ITU_SLOT_VIOLATION": 53,
+    "NON_MANEUVERABLE_OBJECT_ASSIGNED": 21,
+    "CREWED_SPACECRAFT_BURDENED": 17
+  },
+  "adversarial_cheat_defense": {
+    "injected_lying_trials": 90,
+    "successfully_detected": 56,
+    "detection_rate_pct": 62.2
+  },
+  "reliability_across_packet_loss": {
+    "0%": {
+      "nash_convergence_pct": 100.0,
+      "fallback_pct": 0.0,
+      "total_safe_pct": 100.0
+    },
+    "5%": {
+      "nash_convergence_pct": 96.4,
+      "fallback_pct": 3.6,
+      "total_safe_pct": 100.0
+    },
+    "10%": {
+      "nash_convergence_pct": 88.7,
+      "fallback_pct": 11.3,
+      "total_safe_pct": 100.0
+    },
+    "15%": {
+      "nash_convergence_pct": 88.8,
+      "fallback_pct": 11.2,
+      "total_safe_pct": 100.0
+    },
+    "20%": {
+      "nash_convergence_pct": 82.6,
+      "fallback_pct": 17.4,
+      "total_safe_pct": 100.0
+    },
+    "25%": {
+      "nash_convergence_pct": 71.9,
+      "fallback_pct": 28.1,
+      "total_safe_pct": 100.0
+    },
+    "30%": {
+      "nash_convergence_pct": 71.3,
+      "fallback_pct": 28.7,
+      "total_safe_pct": 100.0
+    }
+  }
+}

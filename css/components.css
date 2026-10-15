@@ -1117,3 +1117,364 @@
   font-size: 12px;
   color: var(--text-muted);
 }
+
+/* ===================================================
+   TAB 7: PHASE 4 BENCHMARKS & SCIENTIFIC FIGURES
+   =================================================== */
+
+.benchmarks-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.kpi-card {
+  background: var(--bg-surface-card);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+}
+
+.kpi-success { border-left: 4px solid var(--accent-green); }
+.kpi-cyan    { border-left: 4px solid var(--accent-cyan); }
+.kpi-warning { border-left: 4px solid var(--accent-amber); }
+.kpi-purple  { border-left: 4px solid var(--accent-purple); }
+
+.kpi-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.kpi-val {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.kpi-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* Scientific Figure Gallery */
+.figure-gallery-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.fig-tab-group {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-fig-tab {
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-fig-tab:hover {
+  color: var(--text-main);
+  border-color: var(--accent-cyan);
+}
+
+.btn-fig-tab.active {
+  background: var(--accent-cyan);
+  color: #040c1a;
+  border-color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.figure-content-wrapper {
+  padding: 24px;
+  background: #080d1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.figure-display-box {
+  width: 100%;
+  max-width: 920px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.research-fig-img {
+  width: 100%;
+  max-height: 480px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  background: #000;
+}
+
+.fig-caption-box {
+  background: var(--bg-surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 14px 18px;
+  width: 100%;
+}
+
+.fig-caption-box h4 {
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--accent-cyan);
+  margin-bottom: 4px;
+}
+
+.fig-caption-box p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.benchmark-tables-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 20px;
+}
+
+/* ========================================== */
+/* TAB 8: RESEARCH PAPER READER COMPONENT     */
+/* ========================================== */
+
+.paper-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.paper-hero-card {
+  background: linear-gradient(135deg, rgba(10, 25, 47, 0.95), rgba(4, 12, 26, 0.95));
+  border: 1px solid var(--accent-cyan);
+  border-radius: 12px;
+  padding: 28px 32px;
+  box-shadow: 0 10px 40px rgba(0, 229, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.paper-hero-card::after {
+  content: "IEEE / AIAA MANUSCRIPT";
+  position: absolute;
+  right: -35px;
+  top: 25px;
+  transform: rotate(45deg);
+  background: var(--accent-cyan);
+  color: #040c1a;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 45px;
+  letter-spacing: 1px;
+}
+
+.paper-venue-badge {
+  display: inline-block;
+  background: rgba(0, 229, 255, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.paper-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: #ffffff;
+  line-height: 1.35;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.paper-authors {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.paper-authors strong {
+  color: var(--text-main);
+}
+
+.paper-meta-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.paper-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.paper-nav-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.btn-paper-nav {
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.btn-paper-nav:hover {
+  border-color: var(--accent-cyan);
+  color: var(--text-main);
+}
+
+.btn-paper-nav.active {
+  background: var(--accent-cyan);
+  color: #040c1a;
+  border-color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.paper-body-card {
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 32px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.paper-body-card h3 {
+  font-family: var(--font-display);
+  color: var(--text-main);
+  font-size: 20px;
+  margin-top: 24px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 8px;
+}
+
+.paper-body-card h4 {
+  font-family: var(--font-display);
+  color: var(--accent-cyan);
+  font-size: 16px;
+  margin-top: 18px;
+  margin-bottom: 8px;
+}
+
+.paper-body-card p {
+  margin-bottom: 14px;
+  text-align: justify;
+}
+
+.theorem-card {
+  background: rgba(0, 229, 255, 0.05);
+  border-left: 4px solid var(--accent-cyan);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  margin: 18px 0;
+}
+
+.theorem-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  margin-bottom: 6px;
+}
+
+.theorem-proof {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 8px;
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 8px;
+}
+
+.equation-block {
+  background: #040914;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 12px 18px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #00e5ff;
+  margin: 14px 0;
+  overflow-x: auto;
+}
+
+.viva-box {
+  background: var(--bg-surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+}
+
+.viva-q {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffd60a;
+  margin-bottom: 8px;
+}
+
+.viva-a {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+

@@ -80,6 +80,12 @@
     <button class="nav-tab" data-tab="tab_backend_matrix">
       <span class="tab-icon">⚙️</span> Frontend vs Backend Roadmap
     </button>
+    <button class="nav-tab" data-tab="tab_benchmarks">
+      <span class="tab-icon">📈</span> Phase 4: 1,000 Monte Carlo Benchmarks
+    </button>
+    <button class="nav-tab" data-tab="tab_paper">
+      <span class="tab-icon">📄</span> Research Paper Manuscript
+    </button>
   </nav>
 
   <!-- Main View Container -->
@@ -348,6 +354,42 @@
         </div>
       </div>
       <div id="backendMatrixTab">
+        <!-- Dynamically rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 7: PHASE 4 MONTE CARLO BENCHMARKS -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab_benchmarks">
+      <div class="content-header">
+        <div>
+          <h2>Phase 4: Empirical Research Benchmarks (1,000 Monte Carlo Runs)</h2>
+          <p class="section-desc">
+            Rigorous statistical evaluation of S2SCAN against Baseline 1 (Random Selection) and Baseline 2 (Ground-Mediated 15-Minute Response Model)
+            across 1,000 randomized satellite conjunction scenarios.
+          </p>
+        </div>
+      </div>
+      <div id="benchmarksViewer">
+        <!-- Dynamically rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 8: RESEARCH PAPER MANUSCRIPT -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab_paper">
+      <div class="content-header">
+        <div>
+          <h2>Academic Research Manuscript (IEEE / AIAA Format)</h2>
+          <p class="section-desc">
+            Complete publication-ready paper draft: theoretical formulations, Nash bargaining proofs,
+            anti-cheat theorems, and 1,000 Monte Carlo empirical benchmarks.
+          </p>
+        </div>
+      </div>
+      <div id="paperViewer">
         <!-- Dynamically rendered by app.js -->
       </div>
     </section>
