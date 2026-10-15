@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S2SCAN: Autonomous Satellite Collision Avoidance Protocol & Simulator</title>
+  <meta name="description" content="Aerospace-grade decentralized peer-to-peer collision avoidance protocol for cross-operator satellites using zero-knowledge privacy, game-theoretic bargaining, and BFT fallbacks.">
+  
+  <!-- Modern Aerospace Typography from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body class="dark-theme">
+
+  <!-- Top Aerospace Navigation Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand-logo">
+        <span class="logo-icon">🛰️</span>
+        <div>
+          <h1 class="logo-title">S2SCAN PROTOCOL</h1>
+          <span class="logo-subtitle">Autonomous Cross-Operator Collision Avoidance Simulator</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Stats Ticker -->
+    <div class="stats-ticker">
+      <div class="ticker-item">
+        <span class="t-label">ACTIVE SATELLITES</span>
+        <span class="t-val">18,049</span>
+      </div>
+      <div class="ticker-divider"></div>
+      <div class="ticker-item">
+        <span class="t-label">DAILY CDMs</span>
+        <span class="t-val">~600,000</span>
+      </div>
+      <div class="ticker-divider"></div>
+      <div class="ticker-item">
+        <span class="t-label">STARLINK BURNS</span>
+        <span class="t-val">822 / day</span>
+      </div>
+      <div class="ticker-divider"></div>
+      <div class="ticker-item">
+        <span class="t-label">ISL LATENCY</span>
+        <span class="t-val">12.4 ms</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="status-indicator">
+        <span class="pulse-dot"></span>
+        <span id="systemStatusText">SIMULATOR READY</span>
+      </div>
+      <div class="header-clock" id="headerClock">UTC 2026-10-15</div>
+    </div>
+  </header>
+
+  <!-- Navigation Tab Bar -->
+  <nav class="nav-bar">
+    <button class="nav-tab active" data-tab="tab_simulator">
+      <span class="tab-icon">🖥️</span> Simulator Console
+    </button>
+    <button class="nav-tab" data-tab="tab_variables">
+      <span class="tab-icon">📋</span> 105+ Variables Database
+    </button>
+    <button class="nav-tab" data-tab="tab_game_theory">
+      <span class="tab-icon">⚖️</span> Game Theory Studio
+    </button>
+    <button class="nav-tab" data-tab="tab_crypto">
+      <span class="tab-icon">🔐</span> Cryptographic Inspector
+    </button>
+    <button class="nav-tab" data-tab="tab_datasets">
+      <span class="tab-icon">📊</span> Real-World Datasets
+    </button>
+    <button class="nav-tab" data-tab="tab_backend_matrix">
+      <span class="tab-icon">⚙️</span> Frontend vs Backend Roadmap
+    </button>
+  </nav>
+
+  <!-- Main View Container -->
+  <main class="main-content">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: SIMULATOR & NEGOTIATION CONSOLE -->
+    <!-- ========================================== -->
+    <section class="tab-pane active" id="tab_simulator">
+      
+      <!-- Top 6-Stage Protocol Bar -->
+      <div class="protocol-stages-wrapper">
+        <div class="protocol-stages-bar" id="protocolStagesBar">
+          <!-- Dynamically generated stage indicators -->
+        </div>
+      </div>
+
+      <!-- Simulator Action Controls Bar -->
+      <div class="sim-controls-bar">
+        <div class="control-group-left">
+          <label for="scenarioSelector" class="ctrl-label">Conjunction Scenario:</label>
+          <select id="scenarioSelector" class="scenario-select">
+            <!-- Scenarios loaded dynamically -->
+          </select>
+        </div>
+
+        <div class="control-group-center">
+          <button id="btnStep" class="btn btn-primary" title="Execute next protocol step">
+            <span class="btn-icon">▶</span> Step Protocol
+          </button>
+          <button id="btnAutoPlay" class="btn btn-secondary" title="Auto-advance all stages">
+            <span class="btn-icon">⏩</span> Auto-Run
+          </button>
+          <button id="btnReset" class="btn btn-ghost" title="Reset current scenario">
+            <span class="btn-icon">🔄</span> Reset
+          </button>
+        </div>
+
+        <div class="control-group-right">
+          <button id="btnInjectLie" class="btn btn-danger-outline" title="Simulate satellite cheating on fuel">
+            <span class="btn-icon">⚠️</span> Inject Byzantine Lie
+          </button>
+          <button id="btnInjectDrop" class="btn btn-warning-outline" title="Simulate 30% ISL packet drop">
+            <span class="btn-icon">⚡</span> Inject Packet Loss
+          </button>
+          <span id="protocolStatusBadge" class="status-badge badge-ready">STATUS: READY</span>
+        </div>
+      </div>
+
+      <!-- Main Two-Column Simulator Display -->
+      <div class="simulator-grid">
+        
+        <!-- Left Column: Visual Radar & Telemetry -->
+        <div class="grid-left-col">
+          
+          <!-- Orbital Canvas Container -->
+          <div class="card orbital-canvas-card">
+            <div class="card-header">
+              <span class="card-title">Inter-Satellite Orbital Conjunction Geometry</span>
+              <span class="badge-accent">LIVE INTERFEROMETRY</span>
+            </div>
+            <div class="canvas-wrapper">
+              <canvas id="orbitCanvas"></canvas>
+            </div>
+            <div class="canvas-footer-stats">
+              <div class="c-stat">
+                <span class="cs-label">Time to TCA:</span>
+                <span class="cs-val" id="hudTca">94.2 s</span>
+              </div>
+              <div class="c-stat">
+                <span class="cs-label">Miss Distance:</span>
+                <span class="cs-val highlight-danger" id="hudMiss">142 m</span>
+              </div>
+              <div class="c-stat">
+                <span class="cs-label">Collision Risk (Pc):</span>
+                <span class="cs-val highlight-danger" id="hudPc">1.84e-3</span>
+              </div>
+              <div class="c-stat">
+                <span class="cs-label">Crosslink Status:</span>
+                <span class="cs-val highlight-success">CCSDS Proximity-1 Connected</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dual Satellite Telemetry Cards -->
+          <div class="dual-sat-cards-grid">
+            <div class="card sat-telemetry-card" id="cardSatA">
+              <!-- Dynamically populated Sat A telemetry -->
+            </div>
+            <div class="card sat-telemetry-card" id="cardSatB">
+              <!-- Dynamically populated Sat B telemetry -->
+            </div>
+          </div>
+
+          <!-- 4-Tier Fallback Hierarchy Reference -->
+          <div class="card fallback-summary-card">
+            <div class="card-header">
+              <span class="card-title">S2SCAN 4-Tier Failsafe Hierarchy</span>
+              <span class="badge-subtle">Byzantine Fault Tolerance</span>
+            </div>
+            <div class="fallback-tiers-list">
+              <div class="tier-item active">
+                <span class="tier-num">L1</span>
+                <div>
+                  <strong>Direct S2SCAN Peer-to-Peer Negotiation</strong>
+                  <p>Bilateral consensus via cryptographic commitments & game-theoretic weights.</p>
+                </div>
+              </div>
+              <div class="tier-item">
+                <span class="tier-num">L2</span>
+                <div>
+                  <strong>Predefined Rules of the Road</strong>
+                  <p>Deterministic right-of-way rules if communication link drops or fraud occurs.</p>
+                </div>
+              </div>
+              <div class="tier-item">
+                <span class="tier-num">L3</span>
+                <div>
+                  <strong>Local Autonomous Emergency Avoidance Burn</strong>
+                  <p>Unilateral radial-out burn executed by onboard safety controller when TCA < 60s.</p>
+                </div>
+              </div>
+              <div class="tier-item">
+                <span class="tier-num">L4</span>
+                <div>
+                  <strong>Ground Flight Operations Emergency Escalation</strong>
+                  <p>Dispatches high-priority alert to NASA/ESA/SpaceForce flight director consoles.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Protocol Message Trace Log -->
+        <div class="grid-right-col">
+          <div class="card message-log-card">
+            <div class="card-header">
+              <div>
+                <span class="card-title">S2SCAN Message Trace Log</span>
+                <span class="card-subtitle">Real-time peer-to-peer packet exchange</span>
+              </div>
+              <span class="packet-counter" id="packetCountBadge">Live Feed</span>
+            </div>
+            <div class="message-log-container" id="messageLogContainer">
+              <!-- Populated dynamically with protocol messages -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: 105+ VARIABLES DATABASE -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab_variables">
+      <div class="content-header">
+        <div>
+          <h2>105+ Variables of Autonomous Satellite Negotiation</h2>
+          <p class="section-desc">
+            Complete database of orbital kinematics, propulsion budgets, mission priorities, satellite class constraints,
+            and extreme edge cases that determine maneuver assignment.
+          </p>
+        </div>
+        <div class="search-box">
+          <input type="text" id="varSearchInput" placeholder="Search by variable name or reason...">
+        </div>
+      </div>
+
+      <!-- Categories Filter Tabs -->
+      <div class="categories-pill-bar" id="varCategoriesList">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="table-meta-bar">
+        <span id="varRowCount">Showing all 105 variables</span>
+        <span class="formula-hint">Weights calculated via $W_i = \sum w_k \cdot v_k$ with hard constraints $\to \infty$</span>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 60px;">#</th>
+              <th>Variable Name & Research Impact</th>
+              <th style="width: 100px;">Unit / Type</th>
+              <th style="width: 180px;">Satellite A Value</th>
+              <th style="width: 180px;">Satellite B Value</th>
+              <th style="width: 120px;">Influence</th>
+            </tr>
+          </thead>
+          <tbody id="varTableBody">
+            <!-- Populated dynamically from variables-data.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: GAME THEORY STUDIO -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab_game_theory">
+      <div class="content-header">
+        <div>
+          <h2>Multi-Attribute Game Theory & Negotiation Weight Engine</h2>
+          <p class="section-desc">
+            Tune the objective cost weights ($\alpha, \beta, \gamma, \delta, \dots$) in real time to see how the
+            Nash Bargaining Solution and Rubinstein alternating-offers model dynamically select the maneuvering satellite.
+          </p>
+        </div>
+      </div>
+      <div id="gameTheoryStudio">
+        <!-- Dynamically rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: CRYPTOGRAPHIC INSPECTOR -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab_crypto">
+      <div class="content-header">
+        <div>
+          <h2>Cryptographic Security & Zero-Knowledge Privacy Architecture</h2>
+          <p class="section-desc">
+            Inspect the Ed25519 digital signatures, anti-replay nonces, SHA-256 categorical commitment schemes,
+            and simulated Zero-Knowledge Proofs that allow competitors to negotiate without leaking sensitive telemetry.
+          </p>
+        </div>
+      </div>
+      <div id="cryptoDeepDive">
+        <!-- Dynamically rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: REAL-WORLD DATASETS -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab_datasets">
+      <div class="content-header">
+        <div>
+          <h2>Real-World Orbital Ephemeris & Conjunction Datasets</h2>
+          <p class="section-desc">
+            Explore authentic Space-Track Conjunction Data Messages (CDMs), CelesTrak Starlink TLE ephemerides,
+            and the ESA Kelvins Collision Avoidance dataset used to benchmark S2SCAN.
+          </p>
+        </div>
+      </div>
+      <div id="datasetsViewer">
+        <!-- Dynamically rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 6: FRONTEND VS BACKEND ROADMAP -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab_backend_matrix">
+      <div class="content-header">
+        <div>
+          <h2>Architecture Specification: Frontend Client vs. Python Backend</h2>
+          <p class="section-desc">
+            Detailed engineering breakdown of what is currently implemented in this frontend client versus
+            what components remain to be implemented in the Python backend.
+          </p>
+        </div>
+      </div>
+      <div id="backendMatrixTab">
+        <!-- Dynamically rendered by app.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
