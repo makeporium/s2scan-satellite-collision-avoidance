@@ -1,6 +1,7 @@
 // S2SCAN Orbital Conjunction Canvas Visualizer
 // Aerospace-grade 2D/3D orbital projection with real-time TCA encounter,
-// ISL crosslink beam, thruster plume diversion, and covariance collision ellipsoid.
+// interactive zoom/pan, covariance uncertainty clouds, manual burn vectors,
+// and collision impact simulation.
 
 export class OrbitVisualizer {
   constructor(canvasId) {
@@ -9,10 +10,21 @@ export class OrbitVisualizer {
     this.ctx = this.canvas.getContext('2d');
     this.animationFrame = null;
     this.isRunning = true;
-    this.simTime = 0; // 0 to 1 progress toward TCA
+    this.simTime = 0.1; // 0 to 1 progress toward TCA
     this.timeDirection = 1;
     this.maneuverExecuted = false;
     this.scenario = null;
+
+    // Interactive Controls State
+    this.zoom = 1.0;
+    this.panX = 0;
+    this.panY = 0;
+    this.showCovariance = true;
+    this.showVelocityVectors = true;
+    this.whoManeuvers = 'satA'; // 'satA', 'satB', 'both', 'none'
+    this.maneuverMagnitude = 1.0; // delta-v scaling multiplier
+    this.maneuverDirection = 'radial'; // 'radial', 'intrack', 'crosstrack'
+    this.isManualTime = false;
 
     this.resizeCanvas();
     window.addEventListener('resize', () => this.resizeCanvas());
@@ -23,10 +35,58 @@ export class OrbitVisualizer {
     this.scenario = scenario;
     this.simTime = 0.1;
     this.maneuverExecuted = false;
+    this.whoManeuvers = 'satA';
   }
 
   setManeuverExecuted(status) {
     this.maneuverExecuted = status;
+  }
+
+  setWhoManeuvers(who) {
+    this.whoManeuvers = who;
+  }
+
+  setManeuverMagnitude(mag) {
+    this.maneuverMagnitude = Math.max(0.1, Math.min(5.0, mag));
+  }
+
+  setManeuverDirection(dir) {
+    this.maneuverDirection = dir;
+  }
+
+  setManualTime(t) {
+    this.simTime = Math.max(0.02, Math.min(0.98, t));
+    this.isManualTime = true;
+  }
+
+  resumeAutoPlay() {
+    this.isManualTime = false;
+  }
+
+  setZoom(z) {
+    this.zoom = Math.max(0.5, Math.min(3.0, z));
+  }
+
+  zoomIn() {
+    this.setZoom(this.zoom + 0.2);
+  }
+
+  zoomOut() {
+    this.setZoom(this.zoom - 0.2);
+  }
+
+  resetZoom() {
+    this.zoom = 1.0;
+    this.panX = 0;
+    this.panY = 0;
+  }
+
+  toggleCovariance(show) {
+    this.showCovariance = show;
+  }
+
+  toggleVelocityVectors(show) {
+    this.showVelocityVectors = show;
   }
 
   resizeCanvas() {
@@ -41,7 +101,7 @@ export class OrbitVisualizer {
   }
 
   animate() {
-    if (this.isRunning) {
+    if (this.isRunning && !this.isManualTime) {
       this.simTime += 0.003 * this.timeDirection;
       if (this.simTime > 0.95) this.simTime = 0.95;
       if (this.simTime < 0.05) this.simTime = 0.05;
@@ -60,20 +120,26 @@ export class OrbitVisualizer {
     ctx.fillStyle = '#060913';
     ctx.fillRect(0, 0, w, h);
 
+    // Apply zoom and pan transform centered around screen center
+    ctx.save();
+    ctx.translate(w / 2 + this.panX, h / 2 + this.panY);
+    ctx.scale(this.zoom, this.zoom);
+    ctx.translate(-w / 2, -h / 2);
+
     // Draw deep space star grid
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
     ctx.lineWidth = 1;
     const gridSize = 40;
-    for (let x = 0; x < w; x += gridSize) {
+    for (let x = -w * 0.5; x < w * 1.5; x += gridSize) {
       ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, h);
+      ctx.moveTo(x, -h * 0.5);
+      ctx.lineTo(x, h * 1.5);
       ctx.stroke();
     }
-    for (let y = 0; y < h; y += gridSize) {
+    for (let y = -h * 0.5; y < h * 1.5; y += gridSize) {
       ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
+      ctx.moveTo(-w * 0.5, y);
+      ctx.lineTo(w * 1.5, y);
       ctx.stroke();
     }
 
@@ -144,11 +210,9 @@ export class OrbitVisualizer {
     ctx.restore();
 
     // Calculate Satellite Positions based on simulation time
-    // At simTime = 0.8, they reach TCA (Encounter Point)
     const tcaPointX = cx + orbitRadiusA * 0.95;
     const tcaPointY = cy - 25;
 
-    // Approach trajectories
     const progress = this.simTime;
     let satAx = cx + Math.cos(-0.35 + (progress * 1.1) - 0.9) * orbitRadiusA * 1.25;
     let satAy = cy + Math.sin(-0.35 + (progress * 1.1) - 0.9) * orbitRadiusA * 0.7;
@@ -156,99 +220,185 @@ export class OrbitVisualizer {
     let satBx = cx + Math.cos(0.42 - (progress * 1.05) + 0.8) * orbitRadiusB * 1.2;
     let satBy = cy + Math.sin(0.42 - (progress * 1.05) + 0.8) * orbitRadiusB * 0.75;
 
-    // If maneuver is executed, divert Satellite A outward!
-    if (this.maneuverExecuted) {
-      const divertFactor = Math.max(0, (progress - 0.4) * 55);
-      satAx += divertFactor * 0.8;
-      satAy -= divertFactor * 1.2;
+    // Apply Maneuver Offset based on whoManeuvers, magnitude, and direction
+    let isColliding = false;
+    const isAvoided = this.maneuverExecuted && this.whoManeuvers !== 'none';
 
-      // Draw post-burn diversion path (Green)
-      ctx.strokeStyle = 'rgba(0, 255, 136, 0.8)';
-      ctx.lineWidth = 2.5;
-      ctx.setLineDash([]);
+    if (isAvoided) {
+      const divertFactor = Math.max(0, (progress - 0.35) * 45 * this.maneuverMagnitude);
+      let dx = 0;
+      let dy = 0;
+
+      if (this.maneuverDirection === 'radial') {
+        dx = divertFactor * 0.8;
+        dy = -divertFactor * 1.2;
+      } else if (this.maneuverDirection === 'intrack') {
+        dx = divertFactor * 1.4;
+        dy = divertFactor * 0.3;
+      } else { // crosstrack
+        dx = -divertFactor * 0.5;
+        dy = -divertFactor * 1.5;
+      }
+
+      if (this.whoManeuvers === 'satA' || this.whoManeuvers === 'both') {
+        satAx += dx;
+        satAy += dy;
+
+        // Draw Sat A Thruster Burn Plume
+        ctx.strokeStyle = 'rgba(0, 255, 136, 0.85)';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(satAx - dx, satAy - dy);
+        ctx.lineTo(satAx, satAy);
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(0, 255, 200, 0.9)';
+        ctx.beginPath();
+        ctx.arc(satAx - dx * 0.1, satAy - dy * 0.1, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (this.whoManeuvers === 'satB' || this.whoManeuvers === 'both') {
+        satBx -= dx;
+        satBy -= dy;
+
+        // Draw Sat B Thruster Burn Plume
+        ctx.strokeStyle = 'rgba(255, 180, 0, 0.85)';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(satBx + dx, satBy + dy);
+        ctx.lineTo(satBx, satBy);
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(255, 200, 0, 0.9)';
+        ctx.beginPath();
+        ctx.arc(satBx + dx * 0.1, satBy + dy * 0.1, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (this.whoManeuvers === 'none' && progress >= 0.70) {
+      // User chose to TEST COLLISION (No maneuver!)
+      isColliding = true;
+      const flash = Math.sin(Date.now() * 0.02) > 0;
+
+      // Shockwave rings
+      ctx.strokeStyle = flash ? '#ff3b30' : 'rgba(255, 59, 48, 0.3)';
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(satAx - divertFactor * 0.8, satAy + divertFactor * 1.2);
-      ctx.lineTo(satAx, satAy);
+      ctx.arc(tcaPointX, tcaPointY, 35 + (Date.now() % 500) * 0.08, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Thruster Plume Flame
-      ctx.fillStyle = 'rgba(0, 255, 200, 0.9)';
+      ctx.fillStyle = 'rgba(255, 59, 48, 0.25)';
       ctx.beginPath();
-      ctx.arc(satAx - 10, satAy + 10, 5, 0, Math.PI * 2);
+      ctx.arc(tcaPointX, tcaPointY, 25, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Flashing Collision Banner
+      ctx.fillStyle = '#ff3b30';
+      ctx.font = 'bold 12px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('CRITICAL: ORBITAL COLLISION IMPACT DETECTED!', tcaPointX, tcaPointY - 45);
+    }
+
+    // Draw Conjunction Covariance Uncertainty Ellipsoid at TCA
+    if (this.showCovariance && !isColliding) {
+      ctx.save();
+      ctx.translate(tcaPointX, tcaPointY);
+      ctx.strokeStyle = isAvoided ? 'rgba(0, 255, 136, 0.6)' : 'rgba(255, 59, 48, 0.85)';
+      ctx.fillStyle = isAvoided ? 'rgba(0, 255, 136, 0.08)' : 'rgba(255, 59, 48, 0.18)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 52, 30, 0.35, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fill();
+
+      // TCA Label
+      ctx.fillStyle = isAvoided ? '#00ff88' : '#ff453a';
+      ctx.font = 'bold 10px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      const label = isAvoided 
+        ? `TCA EXPANDED (${(3.2 * this.maneuverMagnitude).toFixed(1)} km - SAFE)` 
+        : 'TCA THREAT ZONE (142 m)';
+      ctx.fillText(label, 0, -38);
+      ctx.restore();
+    }
+
+    // Draw Velocity Vector Arrows
+    if (this.showVelocityVectors) {
+      // Sat A Velocity Vector
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(satAx, satAy);
+      ctx.lineTo(satAx + 32, satAy - 18);
+      ctx.stroke();
+
+      // Sat B Velocity Vector
+      ctx.strokeStyle = '#ff9500';
+      ctx.beginPath();
+      ctx.moveTo(satBx, satBy);
+      ctx.lineTo(satBx - 30, satBy + 16);
+      ctx.stroke();
+    }
+
+    // Draw ISL Laser Link beam between Sat A and Sat B
+    if (!isColliding) {
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.75)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(satAx, satAy);
+      ctx.lineTo(satBx, satBy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw Animated ISL Data Packet
+      const packetProgress = (Date.now() % 1000) / 1000;
+      const packetX = satAx + (satBx - satAx) * packetProgress;
+      const packetY = satAy + (satBy - satAy) * packetProgress;
+      ctx.fillStyle = '#00e5ff';
+      ctx.beginPath();
+      ctx.arc(packetX, packetY, 3.5, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Draw Conjunction Risk Covariance Ellipsoid at TCA Point
-    ctx.save();
-    ctx.translate(tcaPointX, tcaPointY);
-    ctx.strokeStyle = this.maneuverExecuted ? 'rgba(0, 255, 136, 0.5)' : 'rgba(255, 59, 48, 0.8)';
-    ctx.fillStyle = this.maneuverExecuted ? 'rgba(0, 255, 136, 0.08)' : 'rgba(255, 59, 48, 0.15)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([3, 3]);
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 48, 28, 0.3, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.fill();
-
-    // TCA Label
-    ctx.fillStyle = this.maneuverExecuted ? '#00ff88' : '#ff453a';
-    ctx.font = '10px JetBrains Mono, monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(this.maneuverExecuted ? 'TCA CLEARED (4.8km)' : 'TCA ENCOUNTER (142m)', 0, -35);
-    ctx.restore();
-
-    // Draw ISL Laser Link beam between Sat A and Sat B
-    ctx.strokeStyle = 'rgba(0, 229, 255, 0.75)';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(satAx, satAy);
-    ctx.lineTo(satBx, satBy);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Draw ISL Data Packet animation
-    const packetProgress = (Date.now() % 1200) / 1200;
-    const packetX = satAx + (satBx - satAx) * packetProgress;
-    const packetY = satAy + (satBy - satAy) * packetProgress;
-    ctx.fillStyle = '#00e5ff';
-    ctx.beginPath();
-    ctx.arc(packetX, packetY, 3.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Draw Satellite A Marker (Cyan)
+    // Draw Satellite Nodes
     const satAName = this.scenario?.satA?.satelliteId || 'SAT_A';
-    this.drawSatelliteNode(ctx, satAx, satAy, '#00e5ff', satAName, '550 km | 7.59 km/s', this.maneuverExecuted ? 'THRUSTER ACTIVE' : 'NOMINAL');
+    const satAStatus = (isAvoided && (this.whoManeuvers === 'satA' || this.whoManeuvers === 'both'))
+      ? `BURNING Δv: ${(0.32 * this.maneuverMagnitude).toFixed(2)} m/s`
+      : (isColliding ? 'COLLISION COURSE' : 'NOMINAL');
+    this.drawSatelliteNode(ctx, satAx, satAy, '#00e5ff', satAName, '550 km | 7.59 km/s', satAStatus);
 
-    // Draw Satellite B Marker (Orange)
     const satBName = this.scenario?.satB?.satelliteId || 'SAT_B';
-    this.drawSatelliteNode(ctx, satBx, satBy, '#ff9500', satBName, '551 km | 7.58 km/s', 'TRACKING');
+    const satBStatus = (isAvoided && (this.whoManeuvers === 'satB' || this.whoManeuvers === 'both'))
+      ? `BURNING Δv: ${(0.35 * this.maneuverMagnitude).toFixed(2)} m/s`
+      : (isColliding ? 'COLLISION COURSE' : 'TRACKING');
+    this.drawSatelliteNode(ctx, satBx, satBy, '#ff9500', satBName, '551 km | 7.58 km/s', satBStatus);
 
-    // HUD Stats Overlay in corner
-    this.drawHUDOverlay(ctx, w, h);
+    ctx.restore(); // Restore zoom/pan
+
+    // HUD Stats Overlay in top-left corner
+    this.drawHUDOverlay(ctx, w, h, isAvoided, isColliding);
   }
 
   drawSatelliteNode(ctx, x, y, color, name, telemetry, status) {
-    // Outer glow
     ctx.fillStyle = color.replace(')', ', 0.25)').replace('rgb', 'rgba');
     ctx.beginPath();
     ctx.arc(x, y, 14, 0, Math.PI * 2);
     ctx.fill();
 
-    // Inner core
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(x, y, 6, 0, Math.PI * 2);
     ctx.fill();
 
-    // Label card
-    ctx.fillStyle = 'rgba(10, 16, 28, 0.85)';
+    ctx.fillStyle = 'rgba(10, 16, 28, 0.9)';
     ctx.strokeStyle = color;
     ctx.lineWidth = 1;
-    const cardW = 120;
-    const cardH = 34;
+    const cardW = 135;
+    const cardH = 36;
     const cardX = x + 16;
-    const cardY = y - 17;
+    const cardY = y - 18;
 
     ctx.fillRect(cardX, cardY, cardW, cardH);
     ctx.strokeRect(cardX, cardY, cardW, cardH);
@@ -263,27 +413,39 @@ export class OrbitVisualizer {
     ctx.fillText(telemetry, cardX + 6, cardY + 23);
 
     ctx.fillStyle = color;
-    ctx.fillText(status, cardX + 6, cardY + 31);
+    ctx.font = 'bold 8px JetBrains Mono, monospace';
+    ctx.fillText(status, cardX + 6, cardY + 32);
   }
 
-  drawHUDOverlay(ctx, w, h) {
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
-    ctx.fillRect(15, 15, 190, 75);
-    ctx.strokeStyle = 'rgba(0, 229, 255, 0.3)';
-    ctx.strokeRect(15, 15, 190, 75);
+  drawHUDOverlay(ctx, w, h, isAvoided, isColliding) {
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.fillRect(15, 15, 220, 85);
+    ctx.strokeStyle = isColliding ? '#ff3b30' : 'rgba(0, 229, 255, 0.4)';
+    ctx.lineWidth = isColliding ? 2 : 1;
+    ctx.strokeRect(15, 15, 220, 85);
 
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = isColliding ? '#ff3b30' : '#38bdf8';
     ctx.font = 'bold 9px JetBrains Mono, monospace';
     ctx.textAlign = 'left';
-    ctx.fillText('ORBITAL RADAR INTERFEROMETRY', 25, 30);
+    ctx.fillText(isColliding ? '⚠️ CRITICAL IMPACT WARNING' : 'ORBITAL RADAR INTERFEROMETRY', 25, 30);
 
+    const timeRemaining = Math.max(0, (94.2 * (1 - this.simTime))).toFixed(1);
     ctx.fillStyle = '#94a3b8';
     ctx.font = '9px JetBrains Mono, monospace';
-    ctx.fillText(`Time to TCA: ${(Math.max(0, 94.2 - this.simTime * 94)).toFixed(1)} s`, 25, 46);
-    ctx.fillText(`Relative Velocity: 10.84 km/s`, 25, 60);
+    ctx.fillText(`Time to TCA: ${timeRemaining} s`, 25, 46);
+    ctx.fillText(`Zoom: ${this.zoom.toFixed(1)}x | Mode: ${this.maneuverDirection.toUpperCase()}`, 25, 60);
 
-    const missDist = this.maneuverExecuted ? '4,792 m (SAFE)' : '142 m (DANGER)';
-    ctx.fillStyle = this.maneuverExecuted ? '#4ade80' : '#f87171';
-    ctx.fillText(`Miss Distance: ${missDist}`, 25, 74);
+    let missDistText = '142 m (DANGER)';
+    let missColor = '#f87171';
+    if (isColliding) {
+      missDistText = '0.0 m (IMPACT CRASH!)';
+      missColor = '#ff3b30';
+    } else if (isAvoided) {
+      missDistText = `${(2450 * this.maneuverMagnitude).toFixed(0)} m (SAFE)`;
+      missColor = '#4ade80';
+    }
+
+    ctx.fillStyle = missColor;
+    ctx.fillText(`Miss Distance: ${missDistText}`, 25, 74);
   }
 }

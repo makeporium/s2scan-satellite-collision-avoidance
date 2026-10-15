@@ -148,11 +148,26 @@
           <div class="card orbital-canvas-card">
             <div class="card-header">
               <span class="card-title">Inter-Satellite Orbital Conjunction Geometry</span>
-              <span class="badge-accent">LIVE INTERFEROMETRY</span>
+              <div class="radar-quick-tools">
+                <button id="btnZoomOut" class="btn-tool-sm" title="Zoom Out">−</button>
+                <span id="zoomDisplay" class="zoom-label">1.0x</span>
+                <button id="btnZoomIn" class="btn-tool-sm" title="Zoom In">+</button>
+                <button id="btnZoomReset" class="btn-tool-sm" title="Reset View">⟲</button>
+                <label class="toggle-sm"><input type="checkbox" id="chkCovariance" checked> Covariance</label>
+                <label class="toggle-sm"><input type="checkbox" id="chkVectors" checked> Vectors</label>
+              </div>
             </div>
             <div class="canvas-wrapper">
               <canvas id="orbitCanvas"></canvas>
             </div>
+            
+            <!-- Timeline Scrubbing Bar -->
+            <div class="timeline-scrub-bar">
+              <span class="t-scrub-label">Scrub Timeline:</span>
+              <input type="range" id="sliderTimelineScrub" min="0.05" max="0.95" step="0.01" value="0.1" class="timeline-slider">
+              <button id="btnResumePlay" class="btn-tool-sm" title="Resume Real-Time Animation">▶ Play</button>
+            </div>
+
             <div class="canvas-footer-stats">
               <div class="c-stat">
                 <span class="cs-label">Time to TCA:</span>
@@ -170,6 +185,107 @@
                 <span class="cs-label">Crosslink Status:</span>
                 <span class="cs-val highlight-success">CCSDS Proximity-1 Connected</span>
               </div>
+            </div>
+          </div>
+
+          <!-- Interactive Flight Dynamics & Negotiation Control Cockpit -->
+          <div class="card cockpit-card">
+            <div class="card-header">
+              <div>
+                <span class="card-title">🎮 Interactive Flight Control & Decision Override Cockpit</span>
+                <span class="card-subtitle">Real-time parameters: change satellite fuel, classes, TCA countdown, and manually command maneuvers!</span>
+              </div>
+              <span class="badge-accent" id="cockpitModeBadge">MANUAL INTERACTIVE MODE</span>
+            </div>
+
+            <div class="cockpit-body">
+              <!-- Live Sat A vs Sat B Tuning Sliders -->
+              <div class="cockpit-params-grid">
+                
+                <!-- Satellite A Parameter Box -->
+                <div class="sat-param-box sat-a-box">
+                  <div class="box-head">
+                    <span class="sat-dot dot-a"></span>
+                    <strong>Satellite A (Target)</strong>
+                  </div>
+                  <div class="param-row">
+                    <label>Propellant Fuel: <span id="lblFuelA" class="val-pill">78%</span></label>
+                    <input type="range" id="sliderFuelA" min="1" max="100" value="78" class="cockpit-slider">
+                  </div>
+                  <div class="param-row">
+                    <label>Craft Classification:</label>
+                    <select id="selClassA" class="cockpit-select">
+                      <option value="commercial">Commercial Megaconstellation (Starlink)</option>
+                      <option value="geo">Geostationary Telecomm (GEO ±0.05°)</option>
+                      <option value="crewed">Crewed Space Habitat (ISS / Tiangong)</option>
+                      <option value="science">Scientific Observatory (Sentinel)</option>
+                      <option value="debris">Non-Maneuverable Debris (Dead Bus)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Satellite B Parameter Box -->
+                <div class="sat-param-box sat-b-box">
+                  <div class="box-head">
+                    <span class="sat-dot dot-b"></span>
+                    <strong>Satellite B (Chaser)</strong>
+                  </div>
+                  <div class="param-row">
+                    <label>Propellant Fuel: <span id="lblFuelB" class="val-pill">24%</span></label>
+                    <input type="range" id="sliderFuelB" min="1" max="100" value="24" class="cockpit-slider">
+                  </div>
+                  <div class="param-row">
+                    <label>Craft Classification:</label>
+                    <select id="selClassB" class="cockpit-select">
+                      <option value="commercial">Commercial Megaconstellation (OneWeb)</option>
+                      <option value="geo">Geostationary Telecomm (GEO ±0.05°)</option>
+                      <option value="crewed">Crewed Space Habitat (ISS / Tiangong)</option>
+                      <option value="science">Scientific Observatory (Hubble)</option>
+                      <option value="debris">Non-Maneuverable Debris (Rocket Body)</option>
+                    </select>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Conjunction Urgency & Maneuver Tuning -->
+              <div class="maneuver-tuning-bar">
+                <div class="tuning-col">
+                  <label>TCA Urgency Countdown: <strong id="lblTcaSlider">94s</strong></label>
+                  <input type="range" id="sliderTcaUrgency" min="10" max="300" value="94" class="cockpit-slider">
+                  <span class="tuning-sub">Formula 4 Rubinstein Discount D(t): <strong id="lblDiscountVal" style="color: #00e5ff">85.2%</strong></span>
+                </div>
+                <div class="tuning-col">
+                  <label>Maneuver Burn Vector:</label>
+                  <div class="btn-group-segmented">
+                    <button class="btn-seg active" data-dir="radial">Radial-Out (+R)</button>
+                    <button class="btn-seg" data-dir="intrack">In-Track (+I)</button>
+                    <button class="btn-seg" data-dir="crosstrack">Cross-Track (+C)</button>
+                  </div>
+                  <div class="dv-slider-box">
+                    <span>Δv Magnitude: <strong id="lblDvVal">0.32 m/s</strong></span>
+                    <input type="range" id="sliderDvMagnitude" min="0.1" max="3.0" step="0.05" value="1.0" class="cockpit-slider">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Manual Decision Override Actions -->
+              <div class="manual-override-action-bar">
+                <span class="override-label">Command Actions:</span>
+                <button id="btnAutoSolve" class="btn btn-primary btn-sm">
+                  <span>🤖</span> Auto-Solve Nash Bargaining
+                </button>
+                <button id="btnForceSatA" class="btn btn-cyan btn-sm">
+                  <span>⚡</span> Force Sat A Burn
+                </button>
+                <button id="btnForceSatB" class="btn btn-warning btn-sm">
+                  <span>⚡</span> Force Sat B Burn
+                </button>
+                <button id="btnTestCollision" class="btn btn-danger btn-sm">
+                  <span>💥</span> Test Collision (Hold Course)
+                </button>
+              </div>
+
             </div>
           </div>
 
