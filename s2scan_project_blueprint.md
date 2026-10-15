@@ -21,9 +21,9 @@
 We do not reinvent raw astrodynamics (SGP4/Cowell propagation is solved) or invent raw cryptographic primitives (RSA/ECC/SHA is solved). **Our invention is the Protocol Synthesis and Decentralized Multi-Attribute Mechanism**:
 1. **First Cross-Operator Bilateral Protocol**: Existing autonomous systems (Starlink, OneWeb) are single-operator proprietary closed loops. S2SCAN is an open, cross-operator application-layer protocol (analogous to BGP for the Internet).
 2. **Zero-Knowledge Privacy-Preserving Negotiation**: Satellites negotiate without revealing proprietary trade secrets: exact fuel mass remaining, classified orbits, sensitive reconnaissance schedules, or degraded sub-systems. This is achieved via categorical disclosure combined with cryptographically binding SHA-256 / Pedersen commitment schemes.
-3. **Multi-Attribute Operational Constraint Weights**: Previous academic game-theory papers merely assume simple scalar costs $C_A, C_B$ or pure fuel mass. We incorporate real-world hard physical constraints:
-   - ITU GEO station-keeping licenses ($\pm 0.05^\circ$ box violation $\implies$ infinite cost penalty)
-   - Cluster / Formation flight re-acquisition multipliers ($3\times - 10\times$ fuel overhead)
+3. **Multi-Attribute Operational Constraint Weights**: Previous academic game-theory papers merely assume simple scalar costs C_A, C_B or pure fuel mass. We incorporate real-world hard physical constraints:
+   - ITU GEO station-keeping licenses (±0.05° box violation ==> infinite cost penalty)
+   - Cluster / Formation flight re-acquisition multipliers (3.4x to 10x fuel overhead)
    - Non-propulsive / defunct status detection
    - Human crewed spacecraft absolute override
 4. **Deterministic BFT Fallback Hierarchy**: Handles message loss (0-30%), mid-negotiation dropout, and malicious/Byzantine lying with an automated 4-level failsafe:
@@ -38,39 +38,49 @@ We do not reinvent raw astrodynamics (SGP4/Cowell propagation is solved) or inve
 
 | Category | Count | Key Variables | Impact on Negotiation |
 |:---|:---:|:---|:---|
-| **A. Physical Orbital** | 10 | Altitude, Inclination, Eccentricity, RAAN, Argument of Perigee, Velocity, TCA, Miss Distance, Relative Velocity, Conjunction Geometry | Governs maneuver direction (in-track vs cross-track) and fuel $\Delta v$ required |
-| **B. Propulsion & Fuel** | 10 | Usable propellant, Fuel Category (LOW/MED/HIGH/CRITICAL), Isp, Thruster type (Hall/Chemical/Cold Gas), Max Thrust, Req $\Delta v$, Min impulse bit, Health status, Lifetime budget count, Fuel-to-life ratio | Determines raw maneuver ability and relative fuel sacrifice |
+| **A. Physical Orbital** | 10 | Altitude, Inclination, Eccentricity, RAAN, Argument of Perigee, Velocity, TCA, Miss Distance, Relative Velocity, Conjunction Geometry | Governs maneuver direction (in-track vs cross-track) and fuel Δv required |
+| **B. Propulsion & Fuel** | 10 | Usable propellant, Fuel Category (LOW/MED/HIGH/CRITICAL), Isp, Thruster type (Hall/Chemical/Cold Gas), Max Thrust, Req Δv, Min impulse bit, Health status, Lifetime budget count, Fuel-to-life ratio | Determines raw maneuver ability and relative fuel sacrifice |
 | **C. Mission Status** | 10 | Mission type (Comm/EO/Nav/Science), Mission phase (LEOP/Nominal/EOL), Remaining mission months, Observation window active, Commercial SLA commitment, Constellation redundancy, Ground contact window, Payload duty cycle, Settling time, Scheduled maintenance | Protects high-value scientific observations or commercial service guarantees |
-| **D. Satellite Class Constraints** | 25 | **GEO**: ITU slot, Station-keeping box $\pm 0.05^\circ$, License flag.<br>**EO**: Ground target lock, Sun-synchronous local solar time, Nadir pointing.<br>**Formation**: Cluster separation target, Coherence constraint, Re-acquisition fuel multiplier, Coupled dynamics.<br>**Defunct/Passive**: Propulsion present (Y/N), Attitude only, Drag sail deployed, Dead bus.<br>**Crewed Vehicle**: Human onboard flag. | Hard constraints that set negotiation weight $\to \infty$ or trigger mandatory unilateral yield |
+| **D. Satellite Class Constraints** | 25 | **GEO**: ITU slot, Station-keeping box ±0.05°, License flag.<br>**EO**: Ground target lock, Sun-synchronous local solar time, Nadir pointing.<br>**Formation**: Cluster separation target, Coherence constraint, Re-acquisition fuel multiplier, Coupled dynamics.<br>**Defunct/Passive**: Propulsion present (Y/N), Attitude only, Drag sail deployed, Dead bus.<br>**Crewed Vehicle**: Human onboard flag. | Hard constraints that set negotiation weight -> INFINITY or trigger mandatory unilateral yield |
 | **E. Communication & Trust** | 10 | ISL SNR (dB), Comm mode (S2S, Relay), Round-trip latency, Historical reputation score, X.509/Ed25519 Cert validity, Freshness timestamp, Protocol version, Message integrity check, Commitment scheme verification status, Blackout countdown | Dictates timeout thresholds and triggers BFT fallback if link degrades |
-| **F. Collision Risk Assessment** | 10 | Collision Probability ($P_c$), $P_c$ covariance uncertainty, Position covariance ellipsoid, Velocity covariance, Hard-body radius cross-section, Secondary debris cascade risk, Third-party objects in vicinity, Prediction time horizon, CDM source (Radar vs Onboard), $P_c$ trend rate | Primary trigger for negotiation state machine entry ($P_c > 10^{-4}$) |
+| **F. Collision Risk Assessment** | 10 | Collision Probability (Pc), Pc covariance uncertainty, Position covariance ellipsoid, Velocity covariance, Hard-body radius cross-section, Secondary debris cascade risk, Third-party objects in vicinity, Prediction time horizon, CDM source (Radar vs Onboard), Pc trend rate | Primary trigger for negotiation state machine entry (Pc > 1e-4) |
 | **G. Post-Maneuver & Recovery** | 10 | Drift rate, Orbit re-circularization cost, Scheduled future burns, Slot re-acquisition time, Allowed maneuver windows, Ground exclusion zones, Sun-aspect angle, Thruster thermal envelope, Eclipse/shadow status, Battery state of charge (SoC) | Assesses the "hidden cost" after the avoidance burn is complete |
 | **H. Operator & Regulatory** | 10 | Operator nationality, Regulatory authority (FCC/ITU/ESA), Insurance status, Customer SLA penalty, Autonomous burn policy authorization, Bilateral treaty existence, Dispute resolution jurisdiction, Liability treaty compliance, Historical compliance score, Constellation consortium | Resolves administrative right-of-way and legal authorization boundaries |
-| **I. Extreme Edge Cases** | 10 | Both non-maneuverable, Both fuel-critical, 3-way conjunction cluster, Asymmetric threat assessment ($P_{c,A} \neq P_{c,B}$), De-orbiting satellite in last 48h, Mid-handshake link drop, Spoofed signature detected, Formation vs Single encounter, Adjacent GEO slot conflict, Crewed craft encounter | Edge-case state branches in the FSM |
+| **I. Extreme Edge Cases** | 10 | Both non-maneuverable, Both fuel-critical, 3-way conjunction cluster, Asymmetric threat assessment (Pc_A != Pc_B), De-orbiting satellite in last 48h, Mid-handshake link drop, Spoofed signature detected, Formation vs Single encounter, Adjacent GEO slot conflict, Crewed craft encounter | Edge-case state branches in the FSM |
 
 ---
 
 ### Negotiation Algorithm & Game Theory Formulation
 
 #### 1. Multi-Attribute Negotiation Weight Metric
-For satellite $i \in \{A, B\}$, its cost-to-maneuver weight $W_i$ is computed as:
-$$W_i = \alpha \cdot \frac{\Delta v_i}{\Delta v_{\max}} + \beta \cdot \left(1 - \frac{\text{Fuel}_i}{\text{Fuel}_{\max}}\right) + \gamma \cdot \text{Priority}_i + \delta \cdot \text{Disruption}_i + \epsilon \cdot \text{Constraint}_i + \zeta \cdot \text{Recovery}_i$$
+For satellite i in {A, B}, its cost-to-maneuver weight Weight(i) is computed as:
+
+```
+Weight(i) = [ α × (Δv_Cost_i / Max_Δv) ]
+          + [ β × (1 - Fuel_Remaining_i / Max_Fuel) ]
+          + [ γ × (Mission_Priority_i / 10) ]
+          + [ δ × Formation_Disruption_Cost_i ]
+          + [ ε × Mobility_Constraint_i ]
+          + [ ζ × Sovereignty_Flag_i ]
+          + [ η × (Recovery_Cost_i / Max_Recovery) ]
+```
 
 - **Decision Rule**: The satellite with the **LOWER** weight maneuvers:
-  $$\text{Mover} = \arg\min_{i \in \{A, B\}} (W_i)$$
+  `Assigned_Mover = argmin(Weight(A), Weight(B))`
 - **Hard Constraints**:
-  - If Satellite $A$ has $\text{MobilityConstraint} = \text{TRUE}$ (GEO slot / Non-propulsive) $\implies W_A = \infty \implies$ Satellite $B$ moves.
-  - If Satellite $B$ has human crew $\implies W_B = \infty \implies$ Satellite $A$ moves.
+  - If Satellite A has MobilityConstraint = TRUE (GEO slot / Non-propulsive) ==> `Weight(A) = INFINITY` ==> Satellite B moves.
+  - If Satellite B has human crew onboard ==> `Weight(B) = INFINITY` ==> Satellite A moves.
 
-#### 2. Game-Theoretic Framework: Asymmetric Nash Bargaining & Rubinstein Ståhl Model
-- **Disagreement Point ($d$)**: If negotiation fails, both satellites risk catastrophic collision ($U_A(d) = -\infty, U_B(d) = -\infty$) or execute uncoordinated independent burns that waste fuel and risk secondary collision.
-- **Rubinstein Alternating Offers with Discount Factor $\delta_{\text{decay}}$**: As time approaches TCA ($T_{\text{collision}}$), time pressure creates a discount factor:
-  $$\delta_{\text{decay}}(t) = e^{-\lambda (T_{\text{TCA}} - t)^{-1}}$$
-  Satellites are mathematically incentivized to converge rapidly (within 2–3 rounds) because delaying burns exponentially increases the $\Delta v$ required to achieve safe miss distance.
+#### 2. Game-Theoretic Framework: Asymmetric Nash Bargaining & Rubinstein Model
+- **Disagreement Point (d)**: If negotiation fails, both satellites risk catastrophic collision or execute uncoordinated independent burns that waste fuel.
+- **Rubinstein Alternating Offers with Discount Factor**: As time approaches TCA (T_collision), time pressure creates a discount factor:
+  `Discount_Factor(t) = exp( -λ / (TCA - t) )`
+  Satellites are mathematically incentivized to converge rapidly (within 1 to 2 rounds) because delaying burns exponentially increases the Δv required to achieve safe miss distance.
 - **Incentive Compatibility (Why Lying Fails)**:
-  - If Satellite $B$ lies and claims "Fuel = CRITICAL" to force Satellite $A$ to move, $B$ must publish a cryptographic commitment $C_B = \text{SHA256}(\text{FuelCategory} \parallel \text{Salt})$.
-  - In Phase 5 (Commitment Verification) or post-event ground audit, Satellite $B$ reveals $(\text{FuelCategory}, \text{Salt})$.
-  - If discrepancy is discovered or if $B$ fails verification during the handshake, $B$'s reputation metric plummets, and BFT arbitration forces $B$ into penal maneuver responsibility.
+  - If Satellite B lies and claims "Fuel = CRITICAL" to force Satellite A to move, B must publish a cryptographic commitment:
+    `Commitment_B = SHA256( FuelCategory + ":" + SecretSalt )`
+  - In Phase 5 (Commitment Verification), Satellite B reveals (FuelCategory, SecretSalt).
+  - If discrepancy is discovered or if B fails verification during the handshake, B's reputation metric plummets, and BFT arbitration forces B into penal maneuver responsibility.
 
 ---
 
@@ -79,19 +89,19 @@ $$W_i = \alpha \cdot \frac{\Delta v_i}{\Delta v_{\max}} + \beta \cdot \left(1 - 
 1. **Mutual Authentication (Stage 2)**:
    - Uses Edwards-curve Digital Signatures (Ed25519) or ECDSA (secp256r1).
    - Nonce-based challenge-response prevents replay attacks:
-     $$\text{AuthRequest} = \{ \text{SatID}_A, \text{Timestamp}, N_A, \text{PubK}_A, \text{Sig}_A \}$$
-     $$\text{AuthResponse} = \{ \text{SatID}_B, N_A, N_B, \text{PubK}_B, \text{Sig}_B(\text{SHA256}(N_A \parallel N_B)) \}$$
+     `AuthRequest  = { SatID_A, Timestamp, Nonce_A, PubKey_A, Sig_A }`
+     `AuthResponse = { SatID_B, Nonce_A, Nonce_B, PubKey_B, Sig_B }`
 2. **Privacy-Preserving Information Exchange (Stage 3)**:
-   - **Categorical Disclosure**: Raw continuous variables (e.g., $14.832$ kg fuel) are discretized into standard categories: `CRITICAL` ($<10\%$), `LOW` ($10-30\%$), `MED` ($30-70\%$), `HIGH` ($>70\%$).
+   - **Categorical Disclosure**: Raw continuous variables (e.g., 14.832 kg fuel) are discretized into standard categories: `CRITICAL` (<10%), `LOW` (10-30%), `MED` (30-70%), `HIGH` (>70%).
    - **Commitment Scheme**:
-     $$\text{Commitment} = \text{SHA-256}(\text{Category} \parallel \text{SecretSalt})$$
+     `Commitment = SHA256( Category + ":" + SecretSalt )`
    - **Simulated Zero-Knowledge Proof (ZKP)**:
-     Proves statement $\mathcal{P}$: "Satellite $B$ has fuel $\ge \Delta v_{\text{required}}$" without revealing the exact fuel balance.
+     Proves statement: "Satellite B has fuel >= Δv_required" without revealing the exact fuel balance.
 3. **Two-Phase Distributed Consensus Lock (Stages 5 & 6)**:
    - **Phase 1 (Proposal & Agreement)**: Both exchange signed maneuver vectors.
    - **Phase 2 (Commit & Lock)**:
-     $$\text{AgreementHash} = \text{SHA-256}(\text{MoverID} \parallel \Delta\vec{v} \parallel T_{\text{burn}} \parallel \text{Nonce})$$
-     Both nodes store $\text{Sig}_A(\text{AgreementHash})$ and $\text{Sig}_B(\text{AgreementHash})$ into an immutable local event log.
+     `AgreementHash = SHA256( MoverID + ":" + Δv + ":" + BurnTime + ":" + Nonce )`
+     Both nodes store Sig_A(AgreementHash) and Sig_B(AgreementHash) into an immutable local event log.
 
 ---
 
@@ -99,9 +109,9 @@ $$W_i = \alpha \cdot \frac{\Delta v_i}{\Delta v_{\max}} + \beta \cdot \left(1 - 
 
 1. **CelesTrak Starlink Ephemeris TLEs**:
    - URL: `https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle`
-   - Real active Two-Line Element sets for 200+ operational Starlink spacecraft propagated with Skyfield SGP4 over 24h to extract ground-truth conjunction events ($< 5\text{ km}$ miss distance).
+   - Real active Two-Line Element sets for 200+ operational Starlink spacecraft propagated with Skyfield SGP4 over 24h to extract ground-truth conjunction events (< 5 km miss distance).
 2. **Space-Track.org Conjunction Data Messages (CDMs)**:
-   - Contains real 19th Space Defense Squadron covariance matrices, miss distances, and $P_c$ calculations.
+   - Contains real 19th Space Defense Squadron covariance matrices, miss distances, and Pc calculations.
 3. **ESA Kelvins Collision Avoidance Challenge Dataset**:
    - Released by the European Space Agency Space Debris Office. Contains 13,000+ real conjunction events with 7-day risk evolution time series.
 4. **ESA DISCOS (Database and Information System Characterising Objects in Space)**:
@@ -117,7 +127,7 @@ $$W_i = \alpha \cdot \frac{\Delta v_i}{\Delta v_{\max}} + \beta \cdot \left(1 - 
 | **Negotiation Protocol FSM Stepper** | 6-Stage interactive step-by-step UI with message inspector and state transitions | Asyncio peer-to-peer network daemon running across independent ports |
 | **105+ Variables Catalog & Weights** | Full searchable interactive explorer with real-time formula calculator | High-dimensional SQLite/PostgreSQL telemetry database |
 | **Cryptographic Handshake & Commitments** | WebCrypto API SHA-256 hashing, commitment verification, signature verification | Python `cryptography` library, Ed25519 key generation, py_ecc ZKP engine |
-| **Game Theory Engine** | Interactive Nash Bargaining curves, Pareto front, $\alpha/\beta/\gamma$ weight sliders | Multi-agent RL / Scipy multi-objective optimization solver |
+| **Game Theory Engine** | Interactive Nash Bargaining curves, Pareto front, α/β/γ weight sliders | Multi-agent RL / Scipy multi-objective optimization solver |
 | **Adversarial & Fault Injection Scenarios** | 7 pre-set scenarios (GEO, Formation, Lying satellite, 30% drop, Crewed) | Automated Monte Carlo batch testing framework (1000+ runs per seed) |
 | **Dataset Viewer & Conjunction Log** | Realistic loaded dataset records with filtering and instant simulation loading | Live Celestrak API scraper, automated TLE fetcher and cache |
-| **Physical Thruster Burn Execution** | Simulated orbital trajectory alteration and post-burn $P_c$ drop calculation | Numerical astrodynamics Cowell numerical integrator |
+| **Physical Thruster Burn Execution** | Simulated orbital trajectory alteration and post-burn Pc drop calculation | Numerical astrodynamics Cowell numerical integrator |
