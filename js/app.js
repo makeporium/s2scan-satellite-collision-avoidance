@@ -32,6 +32,7 @@ class S2SCANApp {
     this.renderBackendMatrixTab();
     this.renderBenchmarksTab();
     this.renderPaperTab();
+    this.renderDocsTab();
 
     // Init Canvas visualizer
     setTimeout(() => {
@@ -1034,6 +1035,167 @@ class S2SCANApp {
       container.querySelectorAll('.btn-paper-nav').forEach(btn => {
         btn.addEventListener('click', e => {
           activeSection = btn.getAttribute('data-sec');
+          render();
+        });
+      });
+    };
+
+    render();
+  }
+
+  // --- Tab 9: Beginner-Friendly Documentation Reader ---
+  renderDocsTab() {
+    const container = document.getElementById('docsViewer');
+    if (!container) return;
+
+    let activeChapter = 'ch1';
+
+    const render = () => {
+      container.innerHTML = `
+        <div class="paper-dashboard">
+          
+          <!-- Docs Header Banner -->
+          <div class="paper-hero-card" style="border-color: #ffd60a;">
+            <span class="paper-venue-badge" style="border-color: #ffd60a; color: #ffd60a; background: rgba(255, 214, 10, 0.15);">BEGINNER-TO-EXPERT CURRICULUM</span>
+            <h1 class="paper-title">S2SCAN Master Documentation & Concept Guide</h1>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+              A plain-English breakdown of why satellites collide, how the anti-cheat cryptography works, 
+              game theory in simple terms, codebase structure, and complete exam defense preparation.
+            </p>
+            <div class="paper-meta-pills">
+              <span class="paper-pill">5 In-Depth Chapters</span>
+              <span class="paper-pill">Zero Prior Aero Knowledge Needed</span>
+              <span class="paper-pill">Step-by-Step Algorithms</span>
+              <span class="paper-pill">10 Exam Defense Q&As</span>
+            </div>
+          </div>
+
+          <!-- Chapter Navigation Bar -->
+          <div class="paper-nav-bar">
+            <button class="btn-paper-nav ${activeChapter === 'ch1' ? 'active' : ''}" data-ch="ch1">Ch 1: The Big Picture & Story</button>
+            <button class="btn-paper-nav ${activeChapter === 'ch2' ? 'active' : ''}" data-ch="ch2">Ch 2: How All Algorithms Work</button>
+            <button class="btn-paper-nav ${activeChapter === 'ch3' ? 'active' : ''}" data-ch="ch3">Ch 3: Codebase Walkthrough</button>
+            <button class="btn-paper-nav ${activeChapter === 'ch4' ? 'active' : ''}" data-ch="ch4">Ch 4: 1,000 Experiments Proved</button>
+            <button class="btn-paper-nav ${activeChapter === 'ch5' ? 'active' : ''}" data-ch="ch5">Ch 5: Viva & Exam Defense</button>
+          </div>
+
+          <!-- Chapter Content Box -->
+          <div class="paper-body-card">
+            ${activeChapter === 'ch1' ? `
+              <h3>Chapter 1: The Big Picture & The Real-World Story</h3>
+              <p><strong>The Speed of Space:</strong> Satellites travel at 27,000 km/h (18 times faster than a rifle bullet). When two satellites cross paths, they close in at up to 14,000 meters per second. A collision shatters them into tens of thousands of lethal fragments, causing a chain reaction (Kessler Syndrome).</p>
+              
+              <h4>The 2019 Wake-Up Call: ESA vs. SpaceX Starlink</h4>
+              <p>On September 2, 2019, ESA's $500M Aeolus satellite and a SpaceX Starlink satellite almost collided. Instead of automated communication, European controllers sent an email to California! SpaceX missed the alert due to an on-call paging bug, forcing ESA to manually fire thrusters. This proved the manual email system is dangerously obsolete.</p>
+
+              <h4>The Privacy & Cheating Dilemma</h4>
+              <p>Why don't satellites just share their fuel? Because propellant is commercial life and revenue. If a competitor knows your fuel level, they know when your satellite will retire. Furthermore, if the satellite with less fuel gets excused from moving, rational operators have a huge incentive to <strong>lie and report fake low fuel</strong>!</p>
+
+              <h4>The S2SCAN Solution</h4>
+              <p>S2SCAN acts as an autonomous referee in orbit. It connects satellites directly via laser links, uses tamper-proof hardware enclaves so nobody can lie, and uses Nash Bargaining to pick the fairest, fuel-efficient maneuver in <strong>0.26 seconds</strong>.</p>
+              
+              <div style="margin-top: 20px; padding: 12px; background: rgba(0, 229, 255, 0.05); border-radius: 6px;">
+                📄 <em>Read full file: <a href="docs/01_PROJECT_STORY_AND_BIG_PICTURE.md" target="_blank" style="color: #00e5ff;">docs/01_PROJECT_STORY_AND_BIG_PICTURE.md</a></em>
+              </div>
+            ` : ''}
+
+            ${activeChapter === 'ch2' ? `
+              <h3>Chapter 2: How All the Algorithms & Formulas Work</h3>
+              
+              <h4>1. Foster 2D Collision Probability (Pc) & B-Plane</h4>
+              <p>Miss distance alone is misleading because solar drag and radar noise create an uncertainty cloud (Gaussian covariance ellipsoid). Foster's algorithm slices space into the 2D B-plane at TCA and integrates over the combined hard-body radius (R_coll = 5m). If Pc >= 1e-4, emergency maneuvers are triggered.</p>
+
+              <h4>2. Formula 3: SHA-256 Commitments & The Enclave Solution</h4>
+              <p>Before negotiating, Satellite B commits to its claim using a secret salt: <code>Commitment = SHA256("HIGH" + Salt)</code>. Once the hash is sent, B cannot change its mind without creating a hash mismatch (Binding Property).<br>
+              <strong>The Catch:</strong> A hash proves consistency, NOT truth (a satellite could commit to a lie at the start!).<br>
+              <strong>The Fix:</strong> Hardware Secure Enclaves (ARM TrustZone / RISC-V Keystone) read the fuel sensor directly and digitally sign the measurement with an unmodifiable factory key.</p>
+
+              <h4>3. Game Theory & Asymmetric Nash Bargaining</h4>
+              <div class="equation-block">
+                Cost_i(Δv_i) = c_prop · (Δv_i / (I_sp · g_0)) · (1 / (FuelFraction_i + ε)) + GEO_Penalty + Priority
+                Maximize: J = [Utility_A - d_A]^α · [Utility_B - d_B]^β
+              </div>
+              <p>The satellite with 2% fuel has a 50× higher maneuver cost than a satellite with 90% fuel. The Nash solver finds the unique Pareto-optimal compromise.</p>
+
+              <h4>4. Formula 4: Rubinstein Urgent Time-Discounting</h4>
+              <p><code>D(t) = exp(-λ / (TCA - t))</code>. At 94 seconds remaining, D = 85%. At 5 seconds remaining, D collapses to 5%! Waiting for counteroffers becomes economically suicidal, forcing agreement in under 0.3 seconds.</p>
+
+              <h4>5. CCSDS Binary Framing & 4-Tier Fallback</h4>
+              <p>Messages use binary CCSDS frames with CRC-32 (catches bit-flips in microseconds) and Ed25519 signatures. If laser links drop, nodes fall back from Tier 1 (Nash agreement) to Tier 2 (right-of-way rules) and Tier 3 (unilateral emergency radial burn), guaranteeing 100% safety.</p>
+
+              <div style="margin-top: 20px; padding: 12px; background: rgba(0, 229, 255, 0.05); border-radius: 6px;">
+                📄 <em>Read full file: <a href="docs/02_HOW_THE_ALGORITHMS_ACTUALLY_WORK.md" target="_blank" style="color: #00e5ff;">docs/02_HOW_THE_ALGORITHMS_ACTUALLY_WORK.md</a></em>
+              </div>
+            ` : ''}
+
+            ${activeChapter === 'ch3' ? `
+              <h3>Chapter 3: Complete Codebase Walkthrough</h3>
+              <h4>Frontend vs. Python Backend Division</h4>
+              <p><strong>Frontend (Browser):</strong> Interactive cockpit, 2D HTML5 Canvas orbital radar, 6-stage FSM stepping engine, client-side WebCrypto SHA-256 inspector, and 105+ variables catalog.<br>
+              <strong>Python Backend:</strong> Real SGP4 astrodynamics pipeline fetching 220 live Starlinks from CelesTrak, formal Nash Bargaining solver, CCSDS binary space packet codec, async P2P network daemon, and 1,000-run Monte Carlo runner.</p>
+
+              <h4>The Encounter Lifecycle (6 Stages)</h4>
+              <p>1. <strong>T-90s Sensing:</strong> Radar detects close approach; SGP4 calculates miss distance = 310m, Pc = 4.2e-3.<br>
+              2. <strong>T-89s Discovery & Auth:</strong> Laser crosslink connects; mutual Ed25519 digital signature handshake.<br>
+              3. <strong>T-88s Cryptographic Commitment:</strong> Hardware enclaves read fuel sensors; SHA-256 commitment hashes exchanged.<br>
+              4. <strong>T-87s Nash Bargaining:</strong> Both solve the convex Nash product in 15ms; Satellite A assigned +0.32 m/s burn.<br>
+              5. <strong>T-86s Reveal & Audit:</strong> Secret salts and enclave signatures revealed and verified. Zero fraud.<br>
+              6. <strong>T-85s Burn Execution:</strong> Satellite A fires Hall-effect ion thrusters for 4.2s. Satellites pass at 2,450m miss distance.</p>
+
+              <div style="margin-top: 20px; padding: 12px; background: rgba(0, 229, 255, 0.05); border-radius: 6px;">
+                📄 <em>Read full file: <a href="docs/03_CODEBASE_WALKTHROUGH.md" target="_blank" style="color: #00e5ff;">docs/03_CODEBASE_WALKTHROUGH.md</a></em>
+              </div>
+            ` : ''}
+
+            ${activeChapter === 'ch4' ? `
+              <h3>Chapter 4: What the 1,000 Experiments Proved</h3>
+              <h4>Why Monte Carlo?</h4>
+              <p>Instead of testing one ideal scenario, we generated 1,000 randomized encounters across LEO (70%), MEO (15%), and GEO (15%) orbits with varying fuels (0% to 100%), relative speeds (1.5 to 14.8 km/s), and warning times (30s to 30 min).</p>
+
+              <h4>Why Did the Baselines Fail?</h4>
+              <p>• <strong>Baseline 1 (Random Coin-Flip):</strong> Failed in 91 trials and committed 172 critical errors (81 fuel-depleted craft burned out, 53 GEO satellites breached ITU longitude limits, 21 dead debris objects were ordered to move, 17 crewed craft were disrupted).<br>
+              • <strong>Baseline 2 (Ground Coordination):</strong> Failed in 461 trials because human emails take 15 minutes (900 seconds), failing on all emergency pop-up conjunctions.</p>
+
+              <h4>How to Read Figures 1, 2, and 3</h4>
+              <p>• <strong>Figure 1 (Latency CDF):</strong> Median is 0.260s; 95% of runs finish in 1.624s. Plateaus at 1.8s due to the 1.5s watchdog timer (3,461× faster than ground).<br>
+              • <strong>Figure 2 (Safety Comparison):</strong> S2SCAN is 100.0% safe; Baseline 1 is 90.9%; Baseline 2 is 53.9%.<br>
+              • <strong>Figure 3 (Packet Loss Curve):</strong> As crosslink loss increases to 30%, Nash agreements drop to 16%, but Tier 3 autonomous burns rise to 84%, keeping total safety at exactly 100.0%.</p>
+
+              <div style="margin-top: 20px; padding: 12px; background: rgba(0, 229, 255, 0.05); border-radius: 6px;">
+                📄 <em>Read full file: <a href="docs/04_EMPIRICAL_RESULTS_EXPLAINED.md" target="_blank" style="color: #00e5ff;">docs/04_EMPIRICAL_RESULTS_EXPLAINED.md</a></em>
+              </div>
+            ` : ''}
+
+            ${activeChapter === 'ch5' ? `
+              <h3>Chapter 5: Viva Voce & Interview Defense Guide</h3>
+              <h4>The 60-Second Elevator Pitch</h4>
+              <p style="font-style: italic; background: rgba(255, 255, 255, 0.03); padding: 12px; border-left: 3px solid #ffd60a;">
+                "35,000 objects orbit Earth at 27,000 km/h, growing to 60,000 by 2030. Currently, operators coordinate close encounters via manual emails and phone calls, taking 15 to 90 minutes. Furthermore, operators refuse to share proprietary fuel data. We built S2SCAN: an autonomous, peer-to-peer protocol using hardware-attested cryptographic commitments and Asymmetric Nash Bargaining to negotiate safe, mathematically optimal maneuvers in 0.26 seconds without disclosing operational secrets. Across 1,000 Monte Carlo runs, S2SCAN achieved 100.0% safety."
+              </p>
+
+              <h4>Top 4 Exam Questions Answered</h4>
+              <div class="viva-box">
+                <div class="viva-q">Q1: Why not centralized Air Traffic Control?</div>
+                <div class="viva-a">No continuous radar (satellites pass ground stations only 10 mins per 90-min orbit), no international sovereign authority under the 1967 Outer Space Treaty, and ground coordination takes 15-90 minutes, failing on pop-up encounters.</div>
+              </div>
+
+              <div class="viva-box">
+                <div class="viva-q">Q2: What is the novel research contribution?</div>
+                <div class="viva-a">The first open systems architecture integrating zero-knowledge state commitments, asymmetric game theory, and Byzantine fault tolerance to solve the space operational privacy paradox.</div>
+              </div>
+
+              <div style="margin-top: 20px; padding: 12px; background: rgba(0, 229, 255, 0.05); border-radius: 6px;">
+                📄 <em>Read full file: <a href="docs/05_VIVA_AND_EXAM_DEFENSE_GUIDE.md" target="_blank" style="color: #00e5ff;">docs/05_VIVA_AND_EXAM_DEFENSE_GUIDE.md</a></em>
+              </div>
+            ` : ''}
+          </div>
+
+        </div>
+      `;
+
+      container.querySelectorAll('.btn-paper-nav').forEach(btn => {
+        btn.addEventListener('click', e => {
+          activeChapter = btn.getAttribute('data-ch');
           render();
         });
       });
