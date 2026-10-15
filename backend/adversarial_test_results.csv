@@ -1,0 +1,8 @@
+packet_loss_rate_pct,trials,converged_nash_pct,fallback_level3_pct,total_collision_avoided_pct,unresolved_count
+0,50,100.0,0.0,100.0,0
+5,50,82.0,18.0,100.0,0
+10,50,60.0,40.0,100.0,0
+15,50,44.0,56.0,100.0,0
+20,50,28.0,72.0,100.0,0
+25,50,18.0,82.0,100.0,0
+30,50,16.0,84.0,100.0,0
