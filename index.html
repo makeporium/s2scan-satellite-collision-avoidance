@@ -11,9 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/presentation.css">
+  <link rel="stylesheet" href="css/style.css?v=2.1">
+  <link rel="stylesheet" href="css/components.css?v=2.1">
+  <link rel="stylesheet" href="css/presentation.css?v=2.1">
 </head>
 <body class="dark-theme">
 
@@ -327,44 +327,6 @@
             </div>
           </div>
 
-          <!-- 4-Tier Fallback Hierarchy Reference -->
-          <div class="card fallback-summary-card">
-            <div class="card-header">
-              <span class="card-title">S2SCAN 4-Tier Failsafe Hierarchy</span>
-              <span class="badge-subtle">Byzantine Fault Tolerance</span>
-            </div>
-            <div class="fallback-tiers-list">
-              <div class="tier-item active">
-                <span class="tier-num">L1</span>
-                <div>
-                  <strong>Direct S2SCAN Peer-to-Peer Negotiation</strong>
-                  <p>Bilateral consensus via cryptographic commitments & game-theoretic weights.</p>
-                </div>
-              </div>
-              <div class="tier-item">
-                <span class="tier-num">L2</span>
-                <div>
-                  <strong>Predefined Rules of the Road</strong>
-                  <p>Deterministic right-of-way rules if communication link drops or fraud occurs.</p>
-                </div>
-              </div>
-              <div class="tier-item">
-                <span class="tier-num">L3</span>
-                <div>
-                  <strong>Local Autonomous Emergency Avoidance Burn</strong>
-                  <p>Unilateral radial-out burn executed by onboard safety controller when TCA < 60s.</p>
-                </div>
-              </div>
-              <div class="tier-item">
-                <span class="tier-num">L4</span>
-                <div>
-                  <strong>Ground Flight Operations Emergency Escalation</strong>
-                  <p>Dispatches high-priority alert to NASA/ESA/SpaceForce flight director consoles.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
         </div>
 
         <!-- Right Column: Protocol Message Trace Log -->
@@ -383,6 +345,49 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- Spacecraft Showcase & Conjunction Hazard Matrix Panel (Full Width) -->
+      <div class="card spacecraft-showcase-card" id="spacecraftShowcasePanel">
+        <!-- Dynamically populated spacecraft showcase & hazard matrix -->
+      </div>
+
+      <!-- 4-Tier Fallback Hierarchy Reference -->
+      <div class="card fallback-summary-card">
+        <div class="card-header">
+          <span class="card-title">S2SCAN 4-Tier Failsafe Hierarchy</span>
+          <span class="badge-subtle">Byzantine Fault Tolerance</span>
+        </div>
+        <div class="fallback-tiers-list">
+          <div class="tier-item active">
+            <span class="tier-num">L1</span>
+            <div>
+              <strong>Direct S2SCAN Peer-to-Peer Negotiation</strong>
+              <p>Bilateral consensus via cryptographic commitments & game-theoretic weights.</p>
+            </div>
+          </div>
+          <div class="tier-item">
+            <span class="tier-num">L2</span>
+            <div>
+              <strong>Predefined Rules of the Road</strong>
+              <p>Deterministic right-of-way rules if communication link drops or fraud occurs.</p>
+            </div>
+          </div>
+          <div class="tier-item">
+            <span class="tier-num">L3</span>
+            <div>
+              <strong>Local Autonomous Emergency Avoidance Burn</strong>
+              <p>Unilateral radial-out burn executed by onboard safety controller when TCA < 60s.</p>
+            </div>
+          </div>
+          <div class="tier-item">
+            <span class="tier-num">L4</span>
+            <div>
+              <strong>Ground Flight Operations Emergency Escalation</strong>
+              <p>Dispatches high-priority alert to NASA/ESA/SpaceForce flight director consoles.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
     </section>

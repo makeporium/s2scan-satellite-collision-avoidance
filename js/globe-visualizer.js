@@ -252,23 +252,32 @@ export class GlobeVisualizer {
 
   drawSatellites(cx, cy) {
     const ctx = this.ctx;
-    const rOrbit = this.earthRadius + 60;
+    const satA = this.scenario?.satA || { satelliteId: 'STARLINK-3104', satClass: 'LEO_COMM' };
+    const satB = this.scenario?.satB || { satelliteId: 'ONEWEB-0412', satClass: 'LEO_COMM' };
 
-    // Sat A Position (Approaching conjunction point at theta = 1.2)
+    const isGEO_A = satA.isGEO;
+    const isGEO_B = satB.isGEO;
+
+    const rOrbitA = isGEO_A ? (this.earthRadius + 130) : (this.earthRadius + 55);
+    const rOrbitB = isGEO_B ? (this.earthRadius + 130) : (this.earthRadius + 68);
+
+    // Sat A Position
+    const incA = isGEO_A ? 0.05 : (53 * Math.PI / 180);
     const thetaA = 1.2 - Math.sin(this.animTime * 0.4) * 0.12;
-    const pA = this.getSatellitePos(rOrbit, 53 * (Math.PI / 180), 0.2, thetaA, cx, cy);
+    const pA = this.getSatellitePos(rOrbitA, incA, 0.2, thetaA, cx, cy);
 
-    // Sat B Position (Approaching same conjunction point)
+    // Sat B Position
+    const incB = isGEO_B ? 0.05 : (87.4 * Math.PI / 180);
     const thetaB = 1.25 + Math.sin(this.animTime * 0.4) * 0.12;
-    const pB = this.getSatellitePos(rOrbit + 15, 87.4 * (Math.PI / 180), 1.8, thetaB, cx, cy);
+    const pB = this.getSatellitePos(rOrbitB, incB, 1.8, thetaB, cx, cy);
 
     // Conjunction Intersection Hazard Sphere
-    const pConj = this.getSatellitePos(rOrbit + 8, 53 * (Math.PI / 180), 0.2, 1.22, cx, cy);
+    const pConj = this.getSatellitePos((rOrbitA + rOrbitB) / 2, 53 * (Math.PI / 180), 0.2, 1.22, cx, cy);
     const pulseR = (14 + Math.sin(this.animTime * 6) * 5) * pConj.scale;
 
     // Pulsing Red Collision Zone
     const hazardGrad = ctx.createRadialGradient(pConj.x, pConj.y, 2, pConj.x, pConj.y, pulseR);
-    hazardGrad.addColorStop(0, 'rgba(255, 71, 87, 0.8)');
+    hazardGrad.addColorStop(0, 'rgba(255, 71, 87, 0.85)');
     hazardGrad.addColorStop(0.5, 'rgba(255, 71, 87, 0.3)');
     hazardGrad.addColorStop(1, 'rgba(255, 71, 87, 0)');
     ctx.fillStyle = hazardGrad;
@@ -287,15 +296,17 @@ export class GlobeVisualizer {
     ctx.setLineDash([]);
 
     // Draw Satellite A (Cyan)
-    this.renderSatIcon(pA, '#00f0ff', 'STARLINK-3104', '7.58 km/s');
+    const velA = isGEO_A ? '0.35 km/s (35,786 km GEO)' : (satA.isCrewed ? '7.66 km/s (4 CREW)' : '7.58 km/s');
+    this.renderSatIcon(pA, '#00f0ff', satA.satelliteId, velA, satA);
 
     // Draw Satellite B (Orange)
-    this.renderSatIcon(pB, '#ffaa00', 'ONEWEB-0412', '7.54 km/s');
+    const velB = isGEO_B ? '0.35 km/s (35,786 km GEO)' : (satB.isDefunct ? '14.2 km/s (DEFUNCT DEBRIS)' : (satB.isCrewed ? '7.66 km/s (4 CREW)' : (satB.liesAboutFuel ? '7.54 km/s (ROGUE SAT)' : '7.54 km/s')));
+    this.renderSatIcon(pB, '#ffaa00', satB.satelliteId, velB, satB);
 
     // Draw Satellite C (If 3-way cluster)
-    if (this.is3Way) {
-      const pC = this.getSatellitePos(rOrbit + 5, 71.0 * (Math.PI / 180), 0.8, 1.35, cx, cy);
-      this.renderSatIcon(pC, '#ff4757', 'COSMOS-2251 DEBRIS', '7.60 km/s');
+    if (this.is3Way && this.scenario?.satC) {
+      const pC = this.getSatellitePos(this.earthRadius + 60, 71.0 * (Math.PI / 180), 0.8, 1.35, cx, cy);
+      this.renderSatIcon(pC, '#ff4757', this.scenario.satC.satelliteId, '7.60 km/s (DEAD DEBRIS)', this.scenario.satC);
 
       // Draw secondary hazard vector from A to C
       ctx.strokeStyle = 'rgba(255, 200, 0, 0.6)';
@@ -324,41 +335,117 @@ export class GlobeVisualizer {
     return this.project3D(x2, y2, z2, cx, cy);
   }
 
-  renderSatIcon(p, color, name, vel) {
+  renderSatIcon(p, color, name, vel, sat) {
     const ctx = this.ctx;
     const size = Math.max(5, 7 * p.scale);
 
-    // Glowing dot
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.save();
+    ctx.translate(p.x, p.y);
 
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+    const isDefunct = sat?.isDefunct || sat?.satClass === 'NON_MANEUVERABLE';
+    const isGEO = sat?.isGEO;
+    const isCrewed = sat?.isCrewed;
 
-    // Satellite Tag
+    if (isDefunct) {
+      // Tumbling red debris polygon
+      const rot = (Date.now() * 0.002) % (Math.PI * 2);
+      ctx.rotate(rot);
+      ctx.fillStyle = '#ef4444';
+      ctx.strokeStyle = '#f87171';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(-size, -size * 0.6);
+      ctx.lineTo(size * 0.8, -size);
+      ctx.lineTo(size, size * 0.6);
+      ctx.lineTo(-size * 0.5, size);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else if (isGEO) {
+      // Gold satellite with solar panels
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(-size, -size * 0.6, size * 2, size * 1.2);
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(-size * 2.2, -size * 0.4, size * 1.1, size * 0.8);
+      ctx.fillRect(size * 1.1, -size * 0.4, size * 1.1, size * 0.8);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(-size, -size * 0.6, size * 2, size * 1.2);
+    } else if (isCrewed) {
+      // Crewed Dragon capsule
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+      ctx.beginPath();
+      ctx.arc(0, 0, size * 1.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(size * 0.8, size * 0.8);
+      ctx.lineTo(-size * 0.8, size * 0.8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else {
+      // Normal glowing satellite dot
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(0, 0, size, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Satellite Tag Card
+    const cardX = p.x + size + 7;
+    const cardY = p.y - 12;
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.fillRect(cardX, cardY, 140, 26);
+    ctx.strokeStyle = isDefunct ? '#ef4444' : (isCrewed ? '#38bdf8' : (isGEO ? '#eab308' : color));
+    ctx.lineWidth = 1;
+    ctx.strokeRect(cardX, cardY, 140, 26);
+
     ctx.fillStyle = '#ffffff';
-    ctx.font = '600 11px var(--font-mono)';
-    ctx.fillText(name, p.x + size + 6, p.y - 2);
+    ctx.font = 'bold 9px var(--font-mono)';
+    ctx.fillText(name, cardX + 5, cardY + 11);
 
-    ctx.fillStyle = 'var(--text-muted)';
-    ctx.font = '10px var(--font-mono)';
-    ctx.fillText(vel, p.x + size + 6, p.y + 11);
+    ctx.fillStyle = isDefunct ? '#f87171' : 'var(--text-muted)';
+    ctx.font = '8px var(--font-mono)';
+    ctx.fillText(vel, cardX + 5, cardY + 22);
   }
 
   drawHUD(w, h) {
     const ctx = this.ctx;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.font = '700 11px var(--font-mono)';
-    ctx.fillText('3D ORBITAL ENCOUNTER GLOBE (WGS-84 LEO SHELL)', 18, 26);
+    const title = this.scenario?.title || '1. Standard LEO: Fuel Asymmetry';
+    const miss = this.scenario?.missDistanceMeters || 142;
+    const tca = this.scenario?.tcaSeconds || 94;
+    const pc = this.scenario?.pcValue || '1.84e-3';
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.fillRect(16, 16, 320, 52);
+    ctx.strokeStyle = 'rgba(0, 229, 255, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(16, 16, 320, 52);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 10px var(--font-mono)';
+    ctx.fillText(title, 24, 30);
+
+    ctx.fillStyle = '#f87171';
+    ctx.font = '9px var(--font-mono)';
+    ctx.fillText(`Miss Distance: ${miss} m | TCA: ${tca} s | Pc: ${pc}`, 24, 45);
 
     ctx.fillStyle = 'var(--accent-cyan)';
-    ctx.font = '10px var(--font-mono)';
-    ctx.fillText(`ROTATION: [X: ${(this.rotX * 57.3).toFixed(0)}°, Y: ${(this.rotY * 57.3).toFixed(0)}°] | ZOOM: ${this.zoom.toFixed(2)}x`, 18, 42);
+    ctx.font = '8px var(--font-mono)';
+    ctx.fillText(`3D Earth Orbit | Rotate: ${(this.rotX * 57.3).toFixed(0)}°, ${(this.rotY * 57.3).toFixed(0)}° | Zoom: ${this.zoom.toFixed(2)}x`, 24, 58);
 
     ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-    ctx.fillText('Click & Drag to rotate Earth | Scroll to zoom | Real-time Keplerian inclination projection', 18, h - 16);
+    ctx.fillText('Click & Drag to rotate Earth | Scroll to zoom | Real-time Keplerian orbital shells', 18, h - 16);
   }
 }

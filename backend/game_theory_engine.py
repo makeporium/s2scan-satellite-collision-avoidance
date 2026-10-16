@@ -140,6 +140,10 @@ class S2SCANGIMEngine:
         if not actions:
             return {
                 "selected_solution": "NEITHER_CAN_MOVE",
+                "action": "NEITHER_CAN_MOVE",
+                "assigned_mover": "NEITHER",
+                "mover": "NEITHER",
+                "nash_product": 0.0,
                 "rationale": "DEADLOCK: Both participants have infinite maneuver cost. Escalating to Ground Control.",
                 "candidate_evaluations": []
             }
@@ -149,7 +153,9 @@ class S2SCANGIMEngine:
 
         return {
             "selected_solution": best_action["action"],
+            "action": best_action["action"],
             "assigned_mover": best_action["mover"],
+            "mover": best_action["mover"],
             "nash_product": best_action["nash_product"],
             "utility_a": best_action["u_a"],
             "utility_b": best_action["u_b"],

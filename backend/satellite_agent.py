@@ -60,6 +60,7 @@ class SatelliteAgent:
         formation_coupling_multiplier: float = 1.0,
         is_crewed: bool = False,
         is_classified_gov: bool = False,
+        is_defunct: bool = False,
         mission_priority: int = 5,
         recovery_cost: float = 0.35,
     ):
@@ -87,6 +88,7 @@ class SatelliteAgent:
         self.formation_coupling_multiplier = formation_coupling_multiplier
         self.is_crewed = is_crewed
         self.is_classified_gov = is_classified_gov
+        self.is_defunct = is_defunct or (not has_propulsion) or (sat_class == SatelliteClass.NON_MANEUVERABLE)
         self.mission_priority = mission_priority
         self.recovery_cost = recovery_cost
 
@@ -200,6 +202,32 @@ class SatelliteAgent:
             "crewed_flag": self.is_crewed,
             "fuel_commitment_hash": commit_hash,
             "timestamp": time.time(),
+        }
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serializes satellite agent properties for JSON transmission."""
+        return {
+            "satellite_id": self.satellite_id,
+            "operator_id": self.operator_id,
+            "sat_class": self.sat_class.value,
+            "fuel_remaining_pct": self.fuel_remaining_pct,
+            "fuel_category": self.fuel_category.value,
+            "delta_v_required": self.delta_v_required,
+            "has_propulsion": self.has_propulsion,
+            "thruster_type": self.thruster_type,
+            "isp_seconds": self.isp_seconds,
+            "is_geo": self.is_geo,
+            "has_itu_constraint": self.has_itu_constraint,
+            "is_formation": self.is_formation,
+            "formation_coupling_multiplier": self.formation_coupling_multiplier,
+            "is_crewed": self.is_crewed,
+            "is_defunct": self.is_defunct,
+            "is_classified_gov": self.is_classified_gov,
+            "mission_priority": self.mission_priority,
+            "recovery_cost": self.recovery_cost,
+            "public_key": self.public_key,
+            "reputation_score": self.reputation_score,
+            "lies_about_fuel": self.lies_about_fuel,
         }
 
 

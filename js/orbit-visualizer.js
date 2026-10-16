@@ -316,9 +316,10 @@ export class OrbitVisualizer {
       ctx.fillStyle = isAvoided ? '#00ff88' : '#ff453a';
       ctx.font = 'bold 10px JetBrains Mono, monospace';
       ctx.textAlign = 'center';
+      const realMiss = this.scenario?.missDistanceMeters || 142;
       const label = isAvoided 
         ? `TCA EXPANDED (${(3.2 * this.maneuverMagnitude).toFixed(1)} km - SAFE)` 
-        : 'TCA THREAT ZONE (142 m)';
+        : `TCA THREAT ZONE (${realMiss} m)`;
       ctx.fillText(label, 0, -38);
       ctx.restore();
     }
@@ -362,18 +363,15 @@ export class OrbitVisualizer {
       ctx.fill();
     }
 
-    // Draw Satellite Nodes
-    const satAName = this.scenario?.satA?.satelliteId || 'SAT_A';
-    const satAStatus = (isAvoided && (this.whoManeuvers === 'satA' || this.whoManeuvers === 'both'))
-      ? `BURNING Δv: ${(0.32 * this.maneuverMagnitude).toFixed(2)} m/s`
-      : (isColliding ? 'COLLISION COURSE' : 'NOMINAL');
-    this.drawSatelliteNode(ctx, satAx, satAy, '#00e5ff', satAName, '550 km | 7.59 km/s', satAStatus);
+    // Draw Spacecraft Showcases (Sat A and Sat B)
+    const satA = this.scenario?.satA || { satelliteId: 'SAT_A', satClass: 'LEO_COMM' };
+    const satB = this.scenario?.satB || { satelliteId: 'SAT_B', satClass: 'LEO_COMM' };
 
-    const satBName = this.scenario?.satB?.satelliteId || 'SAT_B';
-    const satBStatus = (isAvoided && (this.whoManeuvers === 'satB' || this.whoManeuvers === 'both'))
-      ? `BURNING Δv: ${(0.35 * this.maneuverMagnitude).toFixed(2)} m/s`
-      : (isColliding ? 'COLLISION COURSE' : 'TRACKING');
-    this.drawSatelliteNode(ctx, satBx, satBy, '#ff9500', satBName, '551 km | 7.58 km/s', satBStatus);
+    const isBurningA = isAvoided && (this.whoManeuvers === 'satA' || this.whoManeuvers === 'both');
+    const isBurningB = isAvoided && (this.whoManeuvers === 'satB' || this.whoManeuvers === 'both');
+
+    this.drawSpacecraftShowcase(ctx, satAx, satAy, '#00e5ff', satA, isBurningA, isColliding, 0.32 * this.maneuverMagnitude, false);
+    this.drawSpacecraftShowcase(ctx, satBx, satBy, '#ff9500', satB, isBurningB, isColliding, 0.35 * this.maneuverMagnitude, true);
 
     // If 3-Way Cluster: Draw Satellite C (Defunct Debris)
     if (this.scenario?.is3Way && this.scenario?.satC) {
@@ -401,8 +399,7 @@ export class OrbitVisualizer {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      const satCName = this.scenario.satC.satelliteId;
-      this.drawSatelliteNode(ctx, satCx, satCy, '#ff453a', satCName, '552 km | 7.60 km/s', 'DEFUNCT (NO THRUST)');
+      this.drawSpacecraftShowcase(ctx, satCx, satCy, '#ff453a', this.scenario.satC, false, isColliding, 0, false);
     }
 
     ctx.restore(); // Restore zoom/pan
@@ -411,71 +408,309 @@ export class OrbitVisualizer {
     this.drawHUDOverlay(ctx, w, h, isAvoided, isColliding);
   }
 
-  drawSatelliteNode(ctx, x, y, color, name, telemetry, status) {
-    ctx.fillStyle = color.replace(')', ', 0.25)').replace('rgb', 'rgba');
-    ctx.beginPath();
-    ctx.arc(x, y, 14, 0, Math.PI * 2);
-    ctx.fill();
+  drawSpacecraftShowcase(ctx, x, y, themeColor, sat, isBurning, isColliding, burnDv, isSatB) {
+    ctx.save();
+    ctx.translate(x, y);
 
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(x, y, 6, 0, Math.PI * 2);
-    ctx.fill();
+    const isDefunct = sat.isDefunct || sat.satClass === 'NON_MANEUVERABLE';
+    const isGEO = sat.isGEO;
+    const isCrewed = sat.isCrewed;
+    const isFormation = sat.isFormation;
+    const isByzantine = sat.liesAboutFuel || (this.scenario?.id === 'scen_byzantine_liar' && isSatB);
 
-    ctx.fillStyle = 'rgba(10, 16, 28, 0.9)';
-    ctx.strokeStyle = color;
+    // --- 1. CRAFT GRAPHICS ---
+    if (isDefunct) {
+      // 1. Defunct Object / Space Debris (Tumbling jagged shard)
+      const tumbleAngle = ((Date.now() * 0.0012) % (Math.PI * 2));
+      ctx.save();
+      ctx.rotate(tumbleAngle);
+
+      // Hazard aura
+      ctx.fillStyle = 'rgba(255, 59, 48, 0.25)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 18, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Jagged metallic fragment
+      ctx.fillStyle = '#64748b';
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(-10, -8);
+      ctx.lineTo(6, -11);
+      ctx.lineTo(12, 4);
+      ctx.lineTo(2, 10);
+      ctx.lineTo(-9, 5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Broken jagged solar boom stump
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(6, -11);
+      ctx.lineTo(16, -16);
+      ctx.stroke();
+      ctx.restore();
+
+    } else if (isGEO) {
+      // 2. Geostationary High-Power Craft (Massive gold body + dual long solar arrays + dishes)
+      // Dashed ITU ±0.05° orbital slot boundary box
+      ctx.save();
+      ctx.strokeStyle = 'rgba(234, 179, 8, 0.45)';
+      ctx.setLineDash([3, 3]);
+      ctx.lineWidth = 1;
+      ctx.strokeRect(-28, -24, 56, 48);
+      ctx.restore();
+
+      // Deployable Solar Wings
+      ctx.fillStyle = '#0284c7';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1;
+      // Left solar wing
+      ctx.fillRect(-30, -5, 18, 10);
+      ctx.strokeRect(-30, -5, 18, 10);
+      // Right solar wing
+      ctx.fillRect(12, -5, 18, 10);
+      ctx.strokeRect(12, -5, 18, 10);
+
+      // Gold MLI bus
+      ctx.fillStyle = '#eab308';
+      ctx.strokeStyle = '#ca8a04';
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(-8, -8, 16, 16);
+      ctx.strokeRect(-8, -8, 16, 16);
+
+      // Twin Parabolic Dish Antennas
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(-4, -10, 5, Math.PI * 0.8, Math.PI * 1.8);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(4, -10, 5, Math.PI * 1.2, Math.PI * 2.2);
+      ctx.stroke();
+
+    } else if (isCrewed) {
+      // 3. Crewed Spacecraft (Crew Dragon: conical capsule + blue human life shield)
+      // Glowing blue Human Safety Halo
+      const pulse = 18 + Math.sin(Date.now() * 0.005) * 3;
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.28)';
+      ctx.beginPath();
+      ctx.arc(0, 0, pulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      // White aerodynamic capsule cone
+      ctx.fillStyle = '#f8fafc';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, -12); // nosecone
+      ctx.lineTo(8, 6);
+      ctx.lineTo(-8, 6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Dark service trunk
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(-7, 6, 14, 6);
+      ctx.strokeRect(-7, 6, 14, 6);
+
+      // Docking port hatch dot
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.arc(0, -7, 2, 0, Math.PI * 2);
+      ctx.fill();
+
+    } else if (isFormation) {
+      // 4. Formation Cluster (3 synchronized satellites with cyan baseline links)
+      // Inter-satellite baseline triad
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.6)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.moveTo(0, -8);
+      ctx.lineTo(-12, 8);
+      ctx.lineTo(12, 8);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 3 satellite nodes
+      const nodes = [{x: 0, y: -8}, {x: -12, y: 8}, {x: 12, y: 8}];
+      nodes.forEach((n, idx) => {
+        ctx.fillStyle = idx === 0 ? themeColor : '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+    } else if (isByzantine) {
+      // 5. Byzantine Rogue Satellite (Stealth dark angular body + pulsing red deception signature)
+      const flash = Math.sin(Date.now() * 0.008) > 0;
+      ctx.fillStyle = flash ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.1)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Dark diamond stealth hull
+      ctx.fillStyle = '#0f172a';
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(0, -10);
+      ctx.lineTo(9, 0);
+      ctx.lineTo(0, 10);
+      ctx.lineTo(-9, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Crimson core
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(0, 0, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+    } else {
+      // 6. Commercial LEO Satellite (Modern rectangular bus + solar wings)
+      // Solar array panels
+      ctx.fillStyle = '#0284c7';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1;
+      ctx.fillRect(-22, -3, 14, 6);
+      ctx.strokeRect(-22, -3, 14, 6);
+      ctx.fillRect(8, -3, 14, 6);
+      ctx.strokeRect(8, -3, 14, 6);
+
+      // Central bus body
+      ctx.fillStyle = themeColor;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(-6, -6, 12, 12);
+      ctx.strokeRect(-6, -6, 12, 12);
+
+      // Phased array optical face
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(-3, -3, 6, 6);
+    }
+
+    // --- 2. THRUSTER PLUME (If Burning) ---
+    if (isBurning) {
+      ctx.strokeStyle = 'rgba(0, 255, 200, 0.9)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(0, 10);
+      ctx.lineTo(0, 22);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(0, 255, 200, 0.8)';
+      ctx.beginPath();
+      ctx.arc(0, 20, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // --- 3. TELEMETRY & SPEC CARD ---
+    const cardW = 160;
+    const cardH = 46;
+    const cardX = 22;
+    const cardY = -22;
+
+    ctx.fillStyle = 'rgba(10, 16, 28, 0.92)';
+    ctx.strokeStyle = themeColor;
     ctx.lineWidth = 1;
-    const cardW = 135;
-    const cardH = 36;
-    const cardX = x + 16;
-    const cardY = y - 18;
-
     ctx.fillRect(cardX, cardY, cardW, cardH);
     ctx.strokeRect(cardX, cardY, cardW, cardH);
 
+    // Name & Class badge
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 10px JetBrains Mono, monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(name, cardX + 6, cardY + 13);
+    ctx.fillText(sat.satelliteId, cardX + 7, cardY + 13);
+
+    // Dynamic Altitude & Velocity
+    let altVel = '550 km | 7.59 km/s';
+    if (isGEO) altVel = '35,786 km (GEO) | 0.35 km/s';
+    else if (isCrewed) altVel = '410 km | 7.66 km/s';
+    else if (isDefunct) altVel = '550 km | 14.2 km/s (DEAD)';
 
     ctx.fillStyle = '#94a3b8';
     ctx.font = '8px JetBrains Mono, monospace';
-    ctx.fillText(telemetry, cardX + 6, cardY + 23);
+    ctx.fillText(altVel, cardX + 7, cardY + 24);
 
-    ctx.fillStyle = color;
+    // Status / Constraint Description
+    let statusDesc = isDefunct 
+      ? '⚠️ NO PROPULSION (DEFUNCT)'
+      : (isCrewed ? '👨‍🚀 4 CREW (WEIGHT=∞)' : (isGEO ? '🔒 ITU SLOT RESTRICTED' : (isByzantine ? '🚨 FRAUD / ADVERSARIAL' : (isFormation ? '🔗 3-SAT (3.4x COUPLING)' : `PROP: ${sat.fuelRemainingPct}% (${sat.fuelCategory})`))));
+    
+    if (isBurning) {
+      statusDesc = `BURNING Δv: ${burnDv.toFixed(2)} m/s`;
+    } else if (isColliding) {
+      statusDesc = 'COLLISION COURSE!';
+    }
+
+    ctx.fillStyle = isBurning ? '#4ade80' : (isDefunct || isColliding || isByzantine ? '#f87171' : themeColor);
     ctx.font = 'bold 8px JetBrains Mono, monospace';
-    ctx.fillText(status, cardX + 6, cardY + 32);
+    ctx.fillText(statusDesc, cardX + 7, cardY + 36);
+
+    ctx.restore();
   }
 
   drawHUDOverlay(ctx, w, h, isAvoided, isColliding) {
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.fillRect(15, 15, 220, 85);
-    ctx.strokeStyle = isColliding ? '#ff3b30' : 'rgba(0, 229, 255, 0.4)';
-    ctx.lineWidth = isColliding ? 2 : 1;
-    ctx.strokeRect(15, 15, 220, 85);
+    const sc = this.scenario || {};
+    const tcaSec = sc.tcaSeconds || 94.0;
+    const missDistM = sc.missDistanceMeters || 142.0;
+    const relSpeed = sc.relativeSpeedKmS || 14.82;
+    const pcVal = sc.pcValue || '1.84e-3';
 
-    ctx.fillStyle = isColliding ? '#ff3b30' : '#38bdf8';
+    // Kinetic impact energy for 500kg craft
+    const keGj = (0.5 * 500.0 * Math.pow(relSpeed * 1000.0, 2) / 1e9).toFixed(1);
+    const tntTons = (keGj / 4.184).toFixed(1);
+
+    const isHighThreat = parseFloat(pcVal) >= 1e-4 || missDistM < 100 || sc.satB?.isDefunct || sc.satB?.isCrewed;
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+    ctx.fillRect(15, 15, 260, 100);
+    ctx.strokeStyle = isColliding ? '#ff3b30' : (isHighThreat ? '#ff9500' : 'rgba(0, 229, 255, 0.4)');
+    ctx.lineWidth = isColliding ? 2 : 1;
+    ctx.strokeRect(15, 15, 260, 100);
+
+    // Banner Header
+    ctx.fillStyle = isColliding ? '#ff3b30' : (isHighThreat ? '#ff9500' : '#38bdf8');
     ctx.font = 'bold 9px JetBrains Mono, monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(isColliding ? '⚠️ CRITICAL IMPACT WARNING' : 'ORBITAL RADAR INTERFEROMETRY', 25, 30);
+    ctx.fillText(
+      isColliding 
+        ? '⚠️ CRITICAL IMPACT DETECTED!' 
+        : (isHighThreat ? '🚨 NASA RED-ALERT CONJUNCTION' : '🛰️ ORBITAL CONJUNCTION RADAR'), 
+      25, 30
+    );
 
-    const timeRemaining = Math.max(0, (94.2 * (1 - this.simTime))).toFixed(1);
+    const timeRemaining = Math.max(0, (tcaSec * (1 - this.simTime))).toFixed(1);
     ctx.fillStyle = '#94a3b8';
     ctx.font = '9px JetBrains Mono, monospace';
-    ctx.fillText(`Time to TCA: ${timeRemaining} s`, 25, 46);
-    ctx.fillText(`Zoom: ${this.zoom.toFixed(1)}x | Mode: ${this.maneuverDirection.toUpperCase()}`, 25, 60);
+    ctx.fillText(`TCA Countdown: ${timeRemaining} s | Rel: ${relSpeed} km/s`, 25, 46);
+    ctx.fillText(`Kinetic Energy: ${keGj} GJ (~${tntTons} Tons TNT)`, 25, 60);
 
-    let missDistText = '142 m (DANGER)';
+    let missDistText = `${missDistM} m (HAZARD - Pc: ${pcVal})`;
     let missColor = '#f87171';
     if (isColliding) {
-      missDistText = '0.0 m (IMPACT CRASH!)';
+      missDistText = '0.0 m (IMPACT COLLISION!)';
       missColor = '#ff3b30';
     } else if (isAvoided) {
-      missDistText = `${(2450 * this.maneuverMagnitude).toFixed(0)} m (SAFE)`;
+      missDistText = `${(2450 * this.maneuverMagnitude).toFixed(0)} m (SAFE SEPARATION)`;
       missColor = '#4ade80';
     }
 
     ctx.fillStyle = missColor;
-    ctx.fillText(`Miss Distance: ${missDistText}`, 25, 74);
+    ctx.fillText(`Miss Distance: ${missDistText}`, 25, 75);
+
+    // Mode and zoom indicator
+    ctx.fillStyle = '#64748b';
+    ctx.font = '8px JetBrains Mono, monospace';
+    ctx.fillText(`Zoom: ${this.zoom.toFixed(1)}x | Mode: ${this.maneuverDirection.toUpperCase()} | Engine: Python 3.12 GIM`, 25, 90);
   }
 }
+

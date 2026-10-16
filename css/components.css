@@ -173,6 +173,9 @@
   padding: 5px 12px;
   border-radius: 20px;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
 }
 
 .badge-ready {
@@ -378,11 +381,18 @@
 }
 
 /* Right Column: Message Trace Log */
+.grid-right-col {
+  position: sticky;
+  top: 14px;
+  align-self: start;
+  height: calc(100vh - 120px);
+  min-height: 520px;
+}
+
 .message-log-card {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 600px;
 }
 
 .packet-counter {
@@ -399,7 +409,7 @@
   flex: 1;
   padding: 14px;
   overflow-y: auto;
-  max-height: 680px;
+  max-height: none;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1478,6 +1488,38 @@
 /* ========================================== */
 /* INTERACTIVE FLIGHT COCKPIT & RADAR TOOLS   */
 /* ========================================== */
+
+.radar-globe-segmented {
+  display: inline-flex;
+  background: rgba(10, 16, 28, 0.9);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-right: 4px;
+}
+
+.radar-globe-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 9px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.radar-globe-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.radar-globe-btn.active {
+  background: var(--accent-cyan);
+  color: #030712;
+  font-weight: 800;
+}
 
 .radar-quick-tools {
   display: flex;
